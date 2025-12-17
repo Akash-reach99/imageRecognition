@@ -40,9 +40,11 @@ Thumbs.db
 # ==============================
 # Uploaded / Generated Images
 # ==============================
-static/uploads/
-static/generated/
-static/processed/
+static/uploads/*
+static/generated/*
+static/processed/*
+!.gitkeep
+
 
 # ==============================
 # Logs
