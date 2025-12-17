@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Color Palette Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> </head>
+<body class="page-palette">
+    
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper">
+        <article>
+            <hgroup>
+                <h2>Perceptual Palette Generator</h2>
+                <p>Upload an image to extract its 10 most dominant colors, calculated using the LAB color space for human perception.</p>
+            </hgroup>
+            <form id="palette-form">
+                <label for="file" class="drop-zone">
+                    <span class="drop-zone-prompt">Drag & Drop an image or</span>
+                    <input type="button" value="Click to Upload" class="secondary" onclick="document.getElementById('file').click();" />
+                    <span id="file-input-filename" class="file-input-filename">No file selected</span>
+                </label>
+                <input type="file" id="file" name="file" required class="hidden" accept="image/*"> <div class="image-preview-container hidden">
+                    <img id="image-preview" src="#" alt="Image Preview"/>
+                </div>
+
+                <button type="submit" id="palette-submit-btn">Generate Palette</button>
+            </form>
+        </article>
+
+        <div id="global-loader-container" class="hidden">
+            <div class="loader"></div>
+            <p class="loader-text">Generating Palette...</p>
+        </div>
+
+        <div id="error-message" class="hidden error-message-global"></div>
+
+        <section id="results-container" class="hidden">
+            <hr>
+
+            <article id="auto-palette-article">
+                <h2>Generated Palette</h2>
+                <p class="palette-instructions">Click a color to copy its HEX code.</p>
+                <div id="palette-container" class="minimal-palette-grid"></div>
+            </article>
+
+            <article id="gemini-color-finder">
+                <hgroup>
+                    <h2><i class="fa-solid fa-wand-magic-sparkles"></i> AI Color Name Finder</h2>
+                    <p>Enter any hex code (e.g., <code>#617686</code>) to get its name from Gemini.</p>
+                </hgroup>
+                <div class="color-finder-grid">
+                    <input type="text" id="color-name-input" placeholder="Paste hex code here...">
+                    <button id="color-name-btn">Find Name</button>
+                </div>
+                <div id="color-name-result-container" class="hidden">
+                    <div id="color-name-loader" class="loader hidden" style="margin: 1rem 0;"></div>
+                    <p id="color-name-result"></p>
+                </div>
+            </article>
+            <article id="pinpoint-tool">
+                <hgroup>
+                    <h2>Smart Color Picker</h2>
+                    <p>Move your mouse over the image to inspect colors. Click to copy any HEX code.</p>
+                </hgroup>
+                <canvas id="palette-canvas" class="palette-canvas-class"></canvas>
+            </article>
+        </section>
+
+        <div id="color-inspector" class="color-inspector-class hidden">
+            <span id="inspector-swatch" class="inspector-swatch-class"></span>
+            <span id="inspector-hex" class="inspector-hex-class">#000000</span>
+            <small id="inspector-copied-msg" class="hidden">Copied!</small>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='palette.js') }}"></script>
+</body>
+</html>

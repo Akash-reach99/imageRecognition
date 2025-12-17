@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Powerd Image Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-dashboard">
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero-section">
+            <hgroup>
+                <h1>Welcome, {{ current_user.username }}!</h1>
+                <p>You're all set. Choose a tool below to get started.</p>
+            </hgroup>
+        </section>
+
+        <section class="feature-grid">
+            
+            <a href="{{ url_for('analyzer') }}" class="feature-card-link">
+                <article class="feature-card">
+                    <div class="card-icon-wrapper" style="--icon-bg: #e6f0ff; --icon-color: #0d6efd;">
+                        <i class="fa-solid fa-microscope"></i>
+                    </div>
+                    <hgroup>
+                        <h3>AI Image Analyzer</h3>
+                        <p>Get AI captions, object detection, segmentation, OCR, and more.</p>
+                    </hgroup>
+                    <div class="card-footer-link">
+                        Go to Analyzer <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </article>
+            </a>
+
+            <a href="{{ url_for('palette_generator') }}" class="feature-card-link">
+                <article class="feature-card">
+                    <div class="card-icon-wrapper" style="--icon-bg: #fff0e6; --icon-color: #ff7f0e;">
+                        <i class="fa-solid fa-palette"></i>
+                    </div>
+                    <hgroup>
+                        <h3>Palette Generator</h3>
+                        <p>Extract a 10-color perceptual palette from any image.</p>
+                    </hgroup>
+                    <div class="card-footer-link">
+                        Go to Palette <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </article>
+            </a>
+
+            <a href="{{ url_for('generate') }}" class="feature-card-link">
+                <article class="feature-card">
+                    <div class="card-icon-wrapper" style="--icon-bg: #e6fcf5; --icon-color: #198754;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <hgroup>
+                        <h3>AI Image Generator</h3>
+                        <p>Create new images from text prompts using Stable Diffusion.</p>
+                    </hgroup>
+                    <div class="card-footer-link">
+                        Go to Generate <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </article>
+            </a>
+
+            <a href="{{ url_for('history') }}" class="feature-card-link">
+                <article class="feature-card">
+                    <div class="card-icon-wrapper" style="--icon-bg: #f3e8ff; --icon-color: #6f42c1;">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <hgroup>
+                        <h3>My History</h3>
+                        <p>Review, search, and manage all your past analysis results.</p>
+                    </hgroup>
+                    <div class="card-footer-link">
+                        Go to History <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </article>
+            </a>
+
+        </section>
+    </main>
+    
+    <script>
+        // Simple theme switcher logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitcher = document.getElementById('theme-switcher');
+            if (themeSwitcher) { 
+                themeSwitcher.addEventListener('change', () => {
+                    const theme = themeSwitcher.checked ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('theme', theme);
+                });
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeSwitcher.checked = savedTheme === 'dark';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-history">
+    {% include '_nav.html' %}
+    <main class="container page-wrapper">
+
+        <div class="search-form-container">
+            <form method="GET" action="{{ url_for('history') }}" class="search-form" role="search">
+                <input type="search" id="search" name="search" value="{{ search_query|default('') }}" placeholder="Search by tags (e.g., car) or 'AI Generated'..." >
+                <button type="submit">Search</button>
+            </form>
+            {% if search_query %}
+                <a href="{{ url_for('history') }}" class="secondary outline">Clear Search</a>
+            {% endif %}
+        </div>
+
+        {% if records %}
+            <div class="history-gallery-grid">
+                {% for record in records %}
+                
+                {% set is_generated = 'generation' in record.predictions_json.get('source', '') %}
+                {% set folder = 'generated' if is_generated else 'uploads' %}
+                {% set image_url = url_for('generated_file' if is_generated else 'uploaded_file', filename=record.filename) %}
+                
+                <div class="history-gallery-card"
+                     data-id="{{ record.id }}"
+                     data-filename="{{ record.filename }}"
+                     data-image-url="{{ image_url }}"
+                     data-timestamp="{{ record.upload_timestamp.strftime('%Y-%m-%d %H:%M:%S') if record.upload_timestamp else 'N/A' }}"
+                     data-tags="{{ record.tags|map(attribute='tag_name')|join(',') }}"
+                     data-predictions="{{ record.predictions_str|e }}"
+                     data-is-generated="{{ 'true' if is_generated else 'false' }}">
+
+                    <img src="{{ image_url }}" alt="History image {{ record.filename }}">
+                <div class="card-overlay">
+                        <span class="card-title">
+                            {% if record.predictions_json.gemini and record.predictions_json.gemini.caption %}
+                                {{ record.predictions_json.gemini.caption }}
+                            {% else %}
+                                {{ record.filename[:20] }}...
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <article>
+                <h3>{% if search_query %}No History Found for "{{ search_query }}"{% else %}No History Found{% endif %}</h3>
+                <p>You haven't analyzed any images yet. Go back to the main page to get started!</p>
+            </article>
+        {% endif %}
+    </main>
+
+    <div id="history-modal-backdrop" class="modal-backdrop-class hidden">
+        <article id="history-modal-content" class="modal-content-class">
+            <a href="#" id="history-modal-close" class="modal-close-btn" aria-label="Close">×</a>
+            <div class="modal-body-grid">
+                <div class="modal-image-column">
+                    <img id="modal-image" src="" alt="Analyzed Image" class="zoomable">
+                    <div id="modal-tags-container" class="tag-container"></div>
+                    <small id="modal-timestamp" class="modal-timestamp-class"></small>
+                    
+                    <button id="modal-delete-btn" class="secondary outline" style="--pico-color: var(--error-color); --pico-border-color: var(--error-color); width: 100%; margin-top: 1rem;">
+                        <i class="fa-regular fa-trash-can"></i> Delete this Entry
+                    </button>
+                    </div>
+                <div class="modal-details-column">
+                    
+                    <div id="modal-metadata-section" class="hidden">
+                        <details class="collapsible-section" open>
+                            <summary><h3><i class="fa-solid fa-file-lines"></i> Metadata</h3></summary>
+                            <div id="modal-metadata-content" class="details-content-wrapper" style="padding-left: 1.5rem; border-left: 2px solid var(--pico-card-border-color);"></div>
+                            <div id="modal-map-container" class="hidden" style="margin-top: 1rem; padding-left: 1.5rem;"></div>
+                        </details>
+                    </div>
+                    <div id="modal-generation-info-section" class="hidden">
+                        <details class="collapsible-section" open>
+                            <summary><h3><i class="fa-solid fa-wand-magic-sparkles"></i> Generation Info</h3></summary>
+                            <div class="details-content-wrapper" style="padding-left: 1.5rem; border-left: 2px solid var(--pico-card-border-color);">
+                                <h4 class="gemini-section-title" style="margin-top: 0.5rem;">Prompt</h4>
+                                <pre id="modal-generation-prompt" style="font-size: 0.9em;"></pre>
+                            </div>
+                        </details>
+                    </div>
+                    <div id="modal-gemini-section" class="hidden">
+                        <h3>🧠 Gemini AI Analysis</h3>
+
+                        <div class="gemini-output-section">
+                            <h4 class="gemini-section-title">Caption</h4>
+                            <p id="modal-gemini-caption" class="gemini-caption-class"></p>
+                            </div>
+
+                        <div class="gemini-output-section">
+                            <details class="collapsible-section">
+                                <summary><h4 class="gemini-section-title">Summary</h4></summary>
+                                <p id="modal-gemini-summary"></p>
+                                </details>
+                        </div>
+
+                        <div class="gemini-output-section">
+                            <details class="collapsible-section" open>
+                                <summary><h4 class="gemini-section-title">Detailed Description</h4></summary>
+                                <pre id="modal-gemini-detailed"></pre>
+                                </details>
+                        </div>
+
+                        <div id="modal-sd-prompts-section" class="gemini-output-section hidden">
+                             <details class="collapsible-section">
+                                <summary><h4 class="gemini-section-title">Stable Diffusion Prompt Suggestions</h4></summary>
+                                <pre id="modal-sd-prompts-content"></pre>
+                                </details>
+                        </div>
+
+                        <div id="modal-gemini-social-details" class="gemini-output-section hidden">
+                            <details class="collapsible-section">
+                                <summary><h4 class="gemini-section-title">Social Post</h4></summary>
+                                <pre id="modal-gemini-social"></pre>
+                                </details>
+                        </div>
+                    </div>
+
+                    <div id="modal-ocr-section" class="hidden">
+                        <details class="collapsible-section" open>
+                             <summary><h3>📖 Smart OCR (Text Detection)</h3></summary>
+                             <div class="grid two-col-grid">
+                                <article>
+                                    <h4 class="gemini-section-title">Annotated Image</h4>
+                                    <img id="modal-ocr-annotated-image" src="" alt="OCR Annotated Image" class="zoomable">
+                                </article>
+                                <article>
+                                    <h4 class="gemini-section-title">Extracted Text</h4>
+                                    <pre id="modal-ocr-text"></pre>
+                                </article>
+                             </div>
+                        </details>
+                    </div>
+                    <div id="modal-yolo-section" class="hidden">
+                         <details class="collapsible-section">
+                            <summary><h3>🎨 YOLOv8 Vision Analysis</h3></summary>
+                            <div id="modal-yolo-grid" class="yolo-card-grid"></div>
+                        </details>
+                    </div>
+                    
+                    <div id="modal-imagga-section" class="hidden">
+                        <details class="collapsible-section">
+                             <summary><h3>📸 AI Tags</h3></summary>
+                             <div id="modal-imagga-tags-container" class="tag-container"></div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <div id="zoom-modal-backdrop" class="zoom-modal-backdrop-class hidden">
+        <div id="zoom-modal-content" class="zoom-modal-content-class">
+            <img id="zoom-modal-img" src="" alt="Zoomed Image" />
+        </div>
+    </div>
+
+     <script src="{{ url_for('static', filename='history.js') }}"></script>
+</body>
+</html>

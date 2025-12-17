@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-admin">
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper">
+        <hgroup style="margin-bottom: 2rem;">
+            <h1>Admin Dashboard</h1>
+            <p>Overview of system performance and user management.</p>
+        </hgroup>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <i class="fa-solid fa-users"></i>
+                <span class="stat-number">{{ all_users|length }}</span>
+                <span class="stat-label">Total Users</span>
+            </article>
+            
+            <article class="stat-card">
+                <i class="fa-solid fa-images"></i>
+                <span class="stat-number">{{ total_analyses }}</span>
+                <span class="stat-label">Total Analyses</span>
+            </article>
+
+            <article class="stat-card">
+                <i class="fa-solid fa-server"></i>
+                <span class="stat-number">Active</span>
+                <span class="stat-label">System Status</span>
+            </article>
+        </section>
+
+        <article>
+            <div class="results-header">
+                <h3><i class="fa-solid fa-users-gear"></i> User Management</h3>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table role="grid">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User Details</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr>
+                            <td>#{{ user.id }}</td>
+                            <td>
+                                <strong>{{ user.username }}</strong><br>
+                                <small class="muted">{{ user.email }}</small>
+                            </td>
+                            <td>
+                                {% if user.is_admin %}
+                                    <span class="tag tag-gemini">Admin</span>
+                                {% else %}
+                                    <span class="tag" style="background-color: var(--pico-muted-color);">User</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                            <td style="text-align: right;">
+                                {% if user.id != current_user.id %}
+                                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                        <form method="POST" action="{{ url_for('toggle_admin', user_id=user.id) }}">
+                                            <button type="submit" class="secondary outline small" data-tooltip="Toggle Admin Role">
+                                                <i class="fa-solid fa-user-shield"></i>
+                                            </button>
+                                        </form>
+                                        
+                                        <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" onsubmit="return confirm('Delete this user?');">
+                                            <button type="submit" class="secondary outline small" style="--pico-color: var(--error-color); --pico-border-color: var(--error-color);" data-tooltip="Delete User">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <small>(You)</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </main>
+    
+    <script>
+        // Theme Logic (Keep as is)
+        const themeSwitcher = document.getElementById('theme-switcher');
+        if (themeSwitcher) { 
+            themeSwitcher.addEventListener('change', () => {
+                const theme = themeSwitcher.checked ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+            });
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeSwitcher.checked = savedTheme === 'dark';
+        }
+    </script>
+</body>
+</html>

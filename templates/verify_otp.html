@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - AI Powerd Image Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-auth">
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper auth-container">
+        <article class="auth-card">
+            <hgroup style="text-align: center; margin-bottom: 2rem;">
+                <h1>Check Your Email</h1>
+                <p>We've sent a 6-digit code to your inbox.</p>
+            </hgroup>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('verify_otp') }}" class="auth-form">
+                <label for="otp">
+                    Verification Code
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <input type="text" id="otp" name="otp" placeholder="e.g. 123456" required autocomplete="off" style="letter-spacing: 0.2em; font-size: 1.2em; text-align: center;">
+                    </div>
+                </label>
+                
+                <button type="submit" class="contrast">Verify & Login</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Didn't receive it? <a href="{{ url_for('login') }}">Try again</a>.</p>
+            </div>
+        </article>
+    </main>
+    
+    <script>
+         // Simple theme switcher logic
+         document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitcher = document.getElementById('theme-switcher');
+            if (themeSwitcher) { 
+                themeSwitcher.addEventListener('change', () => {
+                    const theme = themeSwitcher.checked ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('theme', theme);
+                });
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeSwitcher.checked = savedTheme === 'dark';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Powerd Image Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <style>
+        /* Styles for the Crop Modal */
+        .crop-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .crop-modal-content {
+            background: var(--pico-card-background-color);
+            padding: 1rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .crop-container {
+            max-height: 60vh;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            background: #333;
+            /* Dark bg for easier visibility */
+        }
+
+        .crop-container img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .crop-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+    </style>
+</head>
+
+<body class="page-analyzer">
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper">
+        <article id="upload-article">
+            <form id="upload-form">
+                <label for="file" class="drop-zone">
+                    <span class="drop-zone-prompt">Drag & Drop an image or</span>
+                    <input type="button" value="Click to Upload" class="secondary"
+                        onclick="document.getElementById('file').click();" />
+                    <span id="file-input-filename" class="file-input-filename">No file selected</span>
+                </label>
+                <input type="file" id="file" name="file" required class="hidden" accept="image/*">
+
+                <div class="image-preview-container hidden">
+                    <img id="image-preview" src="#" alt="Image Preview" />
+
+                    <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+                        <button type="button" id="pre-crop-btn" class="secondary outline small" style="width: 100%;">
+                            <i class="fa-solid fa-crop-simple"></i> Crop / Focus Area
+                        </button>
+                    </div>
+                </div>
+
+                <fieldset class="task-grid-fieldset">
+                    <legend class="task-grid-legend">Choose Analyses</legend>
+                    <div class="task-grid">
+                        <label class="task-card">
+                            <input type="checkbox" name="tasks" value="gemini_description" checked>
+                            <span class="task-card-icon">🧠</span>
+                            <span class="task-card-title">AI Description</span>
+                            <p class="task-card-desc">Gemini AI captions, summaries, and social posts.</p>
+                        </label>
+                        <label class="task-card">
+                            <input type="checkbox" name="tasks" value="metadata" checked>
+                            <span class="task-card-icon">ℹ️</span>
+                            <span class="task-card-title">Metadata Extraction</span>
+                            <p class="task-card-desc">Extract EXIF data, GPS coordinates, and file telemetry.</p>
+                        </label>
+                        <label class="task-card">
+                            <input type="checkbox" name="tasks" value="ocr" checked>
+                            <span class="task-card-icon">📖</span>
+                            <span class="task-card-title">Extract Text (OCR)</span>
+                            <p class="task-card-desc">Extract any visible text from the image.</p>
+                        </label>
+                        <label class="task-card">
+                            <input type="checkbox" name="tasks" value="detection" checked>
+                            <span class="task-card-icon">🏷️</span>
+                            <span class="task-card-title">Object Detection</span>
+                            <p class="task-card-desc">YOLOv8 detection for object counting and tags.</p>
+                        </label>
+                        <label class="task-card">
+                            <input type="checkbox" name="tasks" value="imagga_tags">
+                            <span class="task-card-icon">📸</span>
+                            <span class="task-card-title">AI Tagging</span>
+                            <p class="task-card-desc">Imagga API for professional-grade tags.</p>
+                        </label>
+                        <label class="task-card">
+                            <input type="checkbox" name="tasks" value="segmentation" checked>
+                            <span class="task-card-icon">🎨</span>
+                            <span class="task-card-title">Editing Toolbox</span>
+                            <p class="task-card-desc">YOLOv8 segmentation for background effects.</p>
+                        </label>
+                    </div>
+                </fieldset>
+                <button type="submit" id="analyze-btn" disabled>Analyze Full Image</button>
+            </form>
+        </article>
+
+        <section id="results-section" class="hidden">
+            <div class="results-header">
+                <h2>Analysis Results</h2>
+                <button id="start-over-btn" class="secondary outline start-over-btn">Start Over with a New
+                    Image</button>
+            </div>
+
+            <div id="results-container">
+                <div class="grid two-col-grid">
+                    <article class="result-card-original">
+                        <h4>Original Image</h4>
+                        <img id="original-image" src="" alt="Original" class="zoomable">
+
+                        <button id="manual-crop-trigger" class="outline contrast small"
+                            style="width: 100%; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-crop-simple"></i> Manual Focus (Fix Detection)
+                        </button>
+                    </article>
+
+                    <article id="metadata-result-card" class="result-card-metadata analysis-card">
+                        <h4>Metadata</h4>
+                        <div id="metadata-content"></div>
+                        <div id="map-container" class="hidden" style="margin-top: 1rem;"></div>
+                    </article>
+                </div>
+
+                <article id="tags-results" class="hidden">
+                    <hgroup>
+                        <h3>🏷️ Smart Tags (Combined)</h3>
+                    </hgroup>
+                    <p>Tags from all selected sources (YOLO, Gemini, Imagga), combined and duplicates removed.</p>
+                    <div id="tags-container" class="tag-container"></div>
+                </article>
+
+                <article id="imagga-results" class="hidden">
+                    <details class="collapsible-section" open>
+                        <summary>
+                            <hgroup>
+                                <h3>📸 Imagga AI Tags</h3>
+                            </hgroup>
+                        </summary>
+                        <div id="imagga-tags-container" class="bar-chart-container"></div>
+                    </details>
+                </article>
+
+                <article id="gemini-results" class="hidden">
+                    <details class="collapsible-section" open>
+                        <summary>
+                            <hgroup>
+                                <h3>🧠 Gemini AI Analysis</h3>
+                            </hgroup>
+                        </summary>
+                        <div class="details-content-wrapper">
+                            <div class="gemini-output-section">
+                                <h4 class="gemini-section-title">Caption</h4>
+                                <div class="copyable-container">
+                                    <p id="gemini-caption-content"></p>
+                                    <button class="copy-btn" data-clipboard-target="#gemini-caption-content"><i
+                                            class="fa-regular fa-copy"></i></button>
+                                </div>
+                            </div>
+                            <div class="gemini-output-section">
+                                <details class="collapsible-section">
+                                    <summary>
+                                        <h4 class="gemini-section-title">Summary</h4>
+                                    </summary>
+                                    <div class="copyable-container">
+                                        <p id="gemini-summary-content"></p>
+                                        <button class="copy-btn" data-clipboard-target="#gemini-summary-content"><i
+                                                class="fa-regular fa-copy"></i></button>
+                                    </div>
+                                </details>
+                            </div>
+                            <div class="gemini-output-section">
+                                <details class="collapsible-section" open>
+                                    <summary>
+                                        <h4 class="gemini-section-title">Detailed Description</h4>
+                                    </summary>
+                                    <div class="copyable-container">
+                                        <pre id="gemini-detailed-description-content"></pre>
+                                        <button class="copy-btn"
+                                            data-clipboard-target="#gemini-detailed-description-content"><i
+                                                class="fa-regular fa-copy"></i></button>
+                                    </div>
+                                </details>
+                            </div>
+                            <div id="gemini-sd-prompts-section" class="gemini-output-section hidden">
+                                <details class="collapsible-section">
+                                    <summary>
+                                        <h4 class="gemini-section-title">Stable Diffusion Prompt Suggestions <a
+                                                href="{{ url_for('generate') }}">Generate</a></h4>
+                                    </summary>
+                                    <div class="copyable-container">
+                                        <pre id="gemini-sd-prompts-content"></pre>
+                                        <button class="copy-btn" data-clipboard-target="#gemini-sd-prompts-content"><i
+                                                class="fa-regular fa-copy"></i></button>
+                                    </div>
+                                </details>
+                            </div>
+                            <div class="gemini-output-section">
+                                <details class="collapsible-section">
+                                    <summary>
+                                        <h4 class="gemini-section-title">Social Media Post</h4>
+                                    </summary>
+                                    <div class="copyable-container">
+                                        <pre id="gemini-social-post-content"></pre>
+                                        <button class="copy-btn" data-clipboard-target="#gemini-social-post-content"><i
+                                                class="fa-regular fa-copy"></i></button>
+                                    </div>
+                                </details>
+                            </div>
+                            <div class="gemini-output-section">
+                                <details class="collapsible-section">
+                                    <summary>
+                                        <h4 class="gemini-section-title">Hidden Details</h4>
+                                    </summary>
+                                    <div class="copyable-container">
+                                        <div id="gemini-hidden-details-content"></div>
+                                        <button class="copy-btn"
+                                            data-clipboard-target="#gemini-hidden-details-content"><i
+                                                class="fa-regular fa-copy"></i></button>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </details>
+                </article>
+
+                <article id="ocr-results" class="hidden analysis-card margin-top-lg">
+                    <div class="analysis-body">
+                        <div class="grid two-col-grid">
+                            <div>
+                                <h4>Annotated Image</h4>
+                                <img id="ocr-annotated-image" src="" alt="OCR Annotated Image"
+                                    class="zoomable rounded-img">
+                            </div>
+                            <div>
+                                <div class="box-header">
+                                    <h4>Extracted Text</h4>
+                                    <button class="copy-btn-mini" data-clipboard-target="#ocr-text-content"><i
+                                            class="fa-regular fa-copy"></i></button>
+                                </div>
+                                <div class="code-block-wrapper">
+                                    <pre id="ocr-text-content"></pre>
+                                </div>
+                                <h4 style="margin-top: 1.5rem;">Individual Detections</h4>
+                                <div id="ocr-detections-list" class="ocr-list-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article id="yolo-vision-analysis" class="hidden">
+                    <details class="collapsible-section" open>
+                        <summary>
+                            <hgroup>
+                                <h3>🎨 YOLOv8 Vision Analysis & Editing</h3>
+                            </hgroup>
+                        </summary>
+                        <div class="details-content-wrapper">
+                            <article id="yolo-detection-results" class="hidden">
+                                <details class="collapsible-section" open>
+                                    <summary>
+                                        <h4 class="gemini-section-title">Object Detection</h4>
+                                    </summary>
+                                    <p>Total objects detected, grouped by category.</p>
+                                    <div id="yolo-count-container" class="yolo-count-list"></div>
+                                </details>
+                            </article>
+
+                            <div id="segmentation-toolbox" class="hidden">
+                                <details class="collapsible-section" open>
+                                    <summary>
+                                        <h4 class="gemini-section-title">✨ Magic Toolbox</h4>
+                                    </summary>
+                                    <div id="seg-loader" class="loader hidden" style="margin: 1rem auto;"></div>
+                                    <div class="grid two-col-grid">
+                                        <div id="seg-controls">
+                                            <fieldset class="toolbox-group"
+                                                style="border: 1px solid var(--pico-muted-border-color); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                                <legend style="padding: 0 0.5rem; font-weight: 600;">Extraction & Crop
+                                                </legend>
+                                                <div class="seg-button-grid">
+                                                    <button id="seg-btn-remove-bg" class="seg-tool-btn outline"><i
+                                                            class="fa-solid fa-eraser"></i> Remove BG</button>
+                                                    <button id="seg-btn-smart-crop" class="seg-tool-btn outline"><i
+                                                            class="fa-solid fa-crop-simple"></i> Smart Crop</button>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset class="toolbox-group"
+                                                style="border: 1px solid var(--pico-muted-border-color); padding: 1rem; border-radius: 8px;">
+                                                <legend style="padding: 0 0.5rem; font-weight: 600;">Background Effects
+                                                </legend>
+                                                <div class="seg-button-grid">
+                                                    <button id="seg-btn-blur-bg" class="seg-tool-btn outline"
+                                                        onclick="window.selectEffect('blur')"><i
+                                                            class="fa-solid fa-droplet"></i> Blur BG</button>
+                                                    <button id="seg-btn-spotlight" class="seg-tool-btn outline"
+                                                        onclick="window.selectEffect('spotlight')"><i
+                                                            class="fa-solid fa-circle-half-stroke"></i>
+                                                        Spotlight</button>
+                                                </div>
+                                                <div id="effect-settings" class="hidden"
+                                                    style="margin-top: 1rem; background: var(--pico-card-background-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--pico-muted-border-color);">
+                                                    <label for="effect-intensity">Intensity: <span id="intensity-value"
+                                                            style="font-weight: bold; color: var(--pico-primary);">50</span>%</label>
+                                                    <input type="range" id="effect-intensity" name="intensity" min="1"
+                                                        max="100" value="50" style="width: 100%;">
+                                                    <button id="apply-effect-btn" class="contrast small"
+                                                        style="width: 100%; margin-top: 0.5rem;">Apply Effect</button>
+                                                </div>
+                                            </fieldset>
+                                            <h6 style="margin-top: 1.5rem;">Segmentation Plot Preview</h6>
+                                            <img id="seg-plot-preview" src="" alt="Segmentation Plot"
+                                                class="seg-plot-preview-img zoomable">
+                                        </div>
+                                        <div id="seg-results">
+                                            <div id="seg-image-after-placeholder" class="edit-placeholder">
+                                                <p>Select a tool to see the magic...</p>
+                                            </div>
+                                            <div id="comparison-wrapper" class="comparison-slider-wrapper hidden">
+                                                <img id="slider-before" src="" alt="Before" class="slider-img">
+                                                <div class="slider-image-overlay"><img id="slider-after" src=""
+                                                        alt="After" class="slider-img"></div>
+                                                <div class="slider-divider">
+                                                    <div class="slider-handle"><i
+                                                            class="fa-solid fa-arrows-left-right"></i></div>
+                                                </div>
+                                            </div>
+                                            <img id="seg-result-image" src="" alt="Edited Image"
+                                                class="seg-result-image hidden"
+                                                style="width: 100%; border-radius: var(--border-radius-lg);">
+                                            <a id="seg-download-btn" href="#" download="edited_image.png"
+                                                class="button hidden" style="margin-top: 1rem; width: 100%;"><i
+                                                    class="fa-solid fa-download"></i> Download Result</a>
+                                        </div>
+                                    </div>
+                                </details>
+                            </div>
+                            <div id="yolo-plots-grid" class="grid two-col-grid"></div>
+                        </div>
+                    </details>
+                </article>
+
+                <article id="qa-section" class="hidden">
+                    <div class="qa-image-ref-container"><img id="qa-reference-image" src="" alt="Image for Q&A"
+                            class="zoomable qa-reference-image-class"></div>
+                    <h3>Ask a Follow-up Question</h3>
+                    <form id="ask-form">
+                        <textarea id="question" name="question" rows="3" placeholder="Ask about the analyzed image..."
+                            required></textarea>
+                        <div id="qa-suggestions" class="qa-suggestions-class">
+                            <button type="button" class="qa-suggestion-btn secondary outline small">Describe the main
+                                subject.</button>
+                            <button type="button" class="qa-suggestion-btn secondary outline small">What is the
+                                mood?</button>
+                            <button type="button" class="qa-suggestion-btn secondary outline small">Any text
+                                visible?</button>
+                        </div>
+                        <button type="submit">Ask</button>
+                    </form>
+                    <div id="qa-loader" class="loader hidden"></div>
+                    <div id="answer-container" class="hidden">
+                        <h4>Answer:</h4>
+                        <p id="answer-text"></p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <div id="global-loader-container" class="hidden">
+            <div class="loader"></div>
+            <p class="loader-text">Analyzing... Please wait.</p>
+        </div>
+        <div id="error-message" class="hidden error-message-global"></div>
+    </main>
+
+    <div id="zoom-modal-backdrop" class="zoom-modal-backdrop-class hidden">
+        <div id="zoom-modal-content" class="zoom-modal-content-class"> <img id="zoom-modal-img" src=""
+                alt="Zoomed Image" /></div>
+    </div>
+
+    <div id="crop-modal-backdrop" class="crop-modal-backdrop hidden">
+        <div class="crop-modal-content">
+            <h4 style="margin-bottom: 1rem;">Manual Focus: Crop to Subject</h4>
+            <div class="crop-container">
+                <img id="crop-modal-img" src="" alt="Image to Crop">
+            </div>
+            <p style="font-size: 0.9em; margin-bottom: 1rem;" class="muted">Drag the corners to focus on the object you
+                want the AI to analyze.</p>
+            <div class="crop-actions">
+                <button type="button" id="crop-cancel-btn" class="secondary outline">Cancel</button>
+                <button type="button" id="crop-apply-btn">Analyze Selection</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="{{ url_for('static', filename='analyzer.js') }}"></script>
+</body>
+
+</html>

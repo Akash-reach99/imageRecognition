@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-edit">
+    <nav class="container-fluid main-nav">
+        <ul>
+            <li><strong><a href="/" class="nav-title-link">🔮 All-in-One Image Analyzer</a></strong></li>
+        </ul>
+        <ul>
+            <li><a href="/">Analyzer</a></li>
+            <li><a href="/palette_generator">Palette Generator</a></li>
+            <li><a href="/generate">Generate</a></li>
+            <li><a href="/edit" class="active" aria-current="page">Edit</a></li>
+            <li><a href="/history">History</a></li>
+            <li>
+                <label for="theme-switcher" class="theme-switcher-label">
+                    <input type="checkbox" id="theme-switcher" name="theme-switcher" role="switch">
+                    Theme
+                </label>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="container page-wrapper">
+        
+        <article id="upload-article-edit">
+            <hgroup>
+                <h2>AI Background Remover</h2>
+                <p>Upload an image to automatically remove the background using YOLOv8 Segmentation.</p>
+            </hgroup>
+            
+            <label for="file" class="drop-zone">
+                <span class="drop-zone-prompt">Drag & Drop an image to edit</span>
+                <input type="button" value="Click to Upload" class="secondary" onclick="document.getElementById('file').click();" />
+                <span id="file-input-filename" class="file-input-filename">No file selected</span>
+            </label>
+            <input type="file" id="file" name="file" required class="hidden" accept="image/*">
+        </article>
+
+        <section id="edit-results-section" class="hidden">
+            <div class="results-header">
+                <h2>Edit Results</h2>
+                <button id="start-over-edit-btn" class="secondary outline start-over-btn">Upload New Image</button>
+            </div>
+
+            <div class="grid two-col-grid">
+                <article>
+                    <h4>Original Image</h4>
+                    <img id="image-before" src="" alt="Original Image" class="zoomable">
+                </article>
+                <article>
+                    <h4>Background Removed (PNG)</h4>
+                    <div id="image-after-placeholder" class="edit-placeholder">
+                        <p>Your edited image will appear here...</p>
+                    </div>
+                    <img id="image-after" src="" alt="Edited Image" class="zoomable hidden">
+                    <a id="download-edited-btn" href="#" download="background_removed.png" class="button hidden" style="margin-top: 1rem;">
+                        <i class="fa-solid fa-download"></i> Download Image
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <div id="global-loader-container" class="hidden">
+            <div class="loader"></div>
+            <p class="loader-text">Removing background...</p>
+        </div>
+        <div id="error-message" class="hidden error-message-global"></div>
+
+    </main>
+
+    <div id="zoom-modal-backdrop" class="zoom-modal-backdrop-class hidden">
+        <div id="zoom-modal-content" class="zoom-modal-content-class">
+            <img id="zoom-modal-img" src="" alt="Zoomed Image" />
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='edit.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - All-in-One Image Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-about">
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper">
+        <article>
+            <hgroup>
+                <h1>About the AI Powerd Image Analyzer</h1>
+                <p>This tool is a comprehensive, AI-powered suite for image analysis, generation, and editing.</p>
+            </hgroup>
+            
+            <p>Our mission is to provide powerful, state-of-the-art computer vision tools in one accessible and user-friendly web application. Whether you're a designer, a content creator, a developer, or just curious, this app gives you deep insights into any image you upload.</p>
+
+            <h3>Core Features</h3>
+            <ul>
+                <li><strong>AI Image Analysis:</strong> Upload any image to receive a detailed breakdown, including AI-generated captions, summaries, social media posts, and even hidden details you might have missed.</li>
+                <li><strong>Advanced Object Recognition:</strong> Using multiple models (like YOLOv8 and Imagga), the tool identifies and tags objects, people, and scenes within your image.</li>
+                <li><strong>Text Extraction (OCR):</strong> Automatically reads and extracts any text present in your image.</li>
+                <li><strong>Smart Segmentation Toolbox:</strong> Instantly remove the background, apply a professional blur effect, or "smart-crop" the main subject from any photo.</li>
+                <li><strong>AI Image Generation:</strong> Create new images from scratch using a powerful text-to-image AI model.</li>
+                <li><strong>Perceptual Color Palette:</strong> Generate a beautiful 10-color palette from any image, calculated using the LAB color space for human perception.</li>
+                <li><strong>History & Search:</strong> Every analysis is automatically saved. You can search your entire image history by the tags that were detected (e.g., "car, person").</li>
+            </ul>
+
+            <h3>Technology Stack</h3>
+            <p>This application is built with a powerful combination of modern AI models and web technologies:</p>
+            <ul>
+                <li><strong>Backend:</strong> Python, Flask</li>
+                <li><strong>Frontend:</strong> HTML, JavaScript, Pico.css</li>
+                <li><strong>Database:</strong> SQLite</li>
+                <li><strong>AI Models:</strong>
+                    <ul>
+                        <li><strong>Google Gemini:</strong> Powers all descriptive analysis, captioning, and Q&A.</li>
+                        <li><strong>YOLOv8 (Large):</strong> Provides high-accuracy object detection, segmentation, pose estimation, and classification.</li>
+                        <li><strong>Stability AI:</strong> Powers the text-to-image generation feature.</li>
+                        <li><strong>Imagga:</strong> Used for commercial-grade AI tagging.</li>
+                    </ul>
+                </li>
+            </ul>
+        </article>
+    </main>
+    
+    <script>
+        // Simple theme switcher logic for this page
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitcher = document.getElementById('theme-switcher');
+            if (themeSwitcher) { 
+                themeSwitcher.addEventListener('change', () => {
+                    const theme = themeSwitcher.checked ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('theme', theme);
+                });
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeSwitcher.checked = savedTheme === 'dark';
+            }
+        });
+    </script>
+</body>
+</html>

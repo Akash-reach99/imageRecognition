@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-generate">
+    
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper">
+
+        <article id="generate-from-image-card">
+            <hgroup>
+                <h2>Generate from Image (Duplicate)</h2>
+                <p>Upload an image and the AI will generate a prompt to create a near-identical copy, replicating its style and content.</p>
+            </hgroup>
+            
+            <form id="generate-from-image-form">
+                <label for="image-file-input" class="drop-zone">
+                    <span class="drop-zone-prompt">Drag & Drop an image or</span>
+                    <input type="button" value="Click to Upload" class="secondary" onclick="document.getElementById('image-file-input').click();" />
+                    <span id="image-file-input-filename" class="file-input-filename">No file selected</span>
+                </label>
+                <input type="file" id="image-file-input" name="file" required class="hidden" accept="image/*">
+                
+                <div class="image-preview-container hidden" id="image-upload-preview-container">
+                    <img id="image-upload-preview" src="#" alt="Image Preview"/>
+                </div>
+
+                <button type="submit" id="generate-from-image-btn" aria-busy="false" disabled>Duplicate Image</button>
+            </form>
+
+            <div id="image-to-image-loader" class="hidden" style="margin-top: 1rem;">
+                <div class="loader"></div>
+                <p class="loader-text" style="color: var(--pico-color);">Generating... This may take a moment.</p>
+            </div>
+            <div id="image-to-image-error" class="hidden error-message-global"></div>
+
+            <section id="image-to-image-results-container" class="hidden" style="margin-top: 1.5rem;">
+                <h3>Generated "Duplicate" Image:</h3>
+                <div class="grid two-col-grid">
+                    <article class="result-card-original">
+                        <h4>Original</h4>
+                        <img id="i2i-original-image" src="" alt="Original" class="zoomable">
+                    </article>
+                    <article class="result-card-original">
+                        <h4>Generated</h4>
+                        <img id="i2i-generated-image" src="" alt="Generated" class="zoomable">
+                    </article>
+                </div>
+                
+                <div class="grid" style="grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem;">
+                    <a id="i2i-download-btn" href="#" download="generated_duplicate.png" class="button">Download Generated Image</a>
+                </div>
+            </section>
+        </article>
+        <article id="prompt-helper-card">
+            <hgroup>
+                <h2>Need an idea?</h2>
+                <p>Enter a single word (e.g., "dragon", "forest", "cyberpunk") and let AI create a rich prompt for you.</p>
+            </hgroup>
+            <div class="grid grid-class-2-col-input-btn">
+                <input type="text" id="prompt-idea-input" placeholder="Enter one word...">
+                <button id="prompt-idea-btn" aria-busy="false">Generate Prompt Idea</button>
+            </div>
+            <div id="prompt-suggestion-container" class="hidden">
+                 <div class="copyable-container">
+                    <pre id="prompt-suggestion-box"></pre>
+                    <button id="copy-suggestion-btn" class="copy-btn" data-clipboard-target="#prompt-suggestion-box" title="Copy Suggestion">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+                <button id="use-suggestion-btn" class="secondary outline">Use This Prompt</button>
+            </div>
+        </article>
+
+        <article>
+            <hgroup>
+                <h2>Generate Image from Prompt</h2>
+                <p>Use Stable Diffusion to create an image from your text description.</p>
+            </hgroup>
+            <form id="generate-form">
+                <label for="prompt">
+                    Enter your prompt
+                    <textarea id="prompt" name="prompt" rows="3" placeholder="e.g., A cinematic shot of a raccoon astronaut in a field of glowing mushrooms" required></textarea>
+                </label>
+                <button type="submit" id="generate-submit-btn">Generate Image</button>
+            </form>
+            <div id="loader" class="loader hidden"></div>
+            <div id="error-message" class="hidden error-message-global"></div>
+            
+            <section id="results-container" class="hidden">
+                <h3>Generated Image:</h3>
+                <img id="generated-image" src="" alt="Generated Image" class="zoomable">
+                
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <button id="download-generated-image-btn" class="button">Download Image</button>
+                    <button id="edit-generated-image-btn" class="button secondary outline">Edit Image</button>
+                </div>
+            </section>
+        </article>
+        
+        <article id="image-editor-section" class="hidden" style="margin-top: 2rem;">
+            <h3>Image Editor</h3>
+            <div class="editor-grid-class">
+                <div class="editor-canvas-wrapper">
+                    <canvas id="image-editor-canvas" style="width: 100%; border-radius: var(--pico-border-radius); border: 1px solid var(--pico-card-border-color);"></canvas>
+                </div>
+                <div class="editor-controls">
+                    <details open>
+                        <summary>Add Text</summary>
+                        <label for="text-overlay-input">Text</label>
+                        <input type="text" id="text-overlay-input" placeholder="Enter text...">
+                        <div class="grid">
+                            <label for="text-color">
+                                Color
+                                <input type="color" id="text-color" value="#000000">
+                            </label>
+                            <label for="text-size">
+                                Size (px)
+                                <input type="number" id="text-size" value="30">
+                            </label>
+                        </div>
+                        <button id="add-text-btn" class="small">Add Text</button>
+                    </details>
+                    
+                    <details open>
+                        <summary>Apply Filter</summary>
+                         <label for="filter-select">Filter</label>
+                        <select id="filter-select">
+                            <option value="none">None</option>
+                            <option value="grayscale">Grayscale</option>
+                            <option value="sepia">Sepia</option>
+                            <option value="invert">Invert</option>
+                        </select>
+                        <button id="apply-filter-btn" class="small">Apply Filter</button>
+                    </details>
+                    
+                    <hr>
+
+                    <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <button id="reset-editor-btn" class="secondary outline">Reset</button>
+                        <button id="download-edited-image-btn">Download Edited</button>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <div id="api-counter-widget" class="api-counter-widget-class">
+            </div>
+
+    </main>
+
+    <div id="zoom-modal-backdrop" class="zoom-modal-backdrop-class hidden">
+        <div id="zoom-modal-content" class="zoom-modal-content-class">
+            <img id="zoom-modal-img" src="" alt="Zoomed Image" />
+        </div>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+<script>
+    // MERGED SCRIPT
+    // This now contains the logic from BOTH
+    // generate.html AND image_creator.js
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // --- Elements from generate.html ---
+        const form = document.getElementById('generate-form');
+        const mainPromptTextarea = document.getElementById('prompt');
+        const loader = document.getElementById('loader');
+        const resultsContainer = document.getElementById('results-container');
+        const errorMessage = document.getElementById('error-message');
+        const generatedImage = document.getElementById('generated-image');
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const generateBtn = document.getElementById('generate-submit-btn');
+        const ideaInput = document.getElementById('prompt-idea-input');
+        const ideaBtn = document.getElementById('prompt-idea-btn');
+        const suggestionContainer = document.getElementById('prompt-suggestion-container');
+        const suggestionBox = document.getElementById('prompt-suggestion-box');
+        const copySuggestionBtn = document.getElementById('copy-suggestion-btn');
+        const useSuggestionBtn = document.getElementById('use-suggestion-btn');
+        const counterSummary = document.getElementById('api-counter-summary');
+        const counterDetails = document.getElementById('api-counter-details');
+        const totalCountDisplay = document.getElementById('api-total-count');
+        const geminiCountDisplay = document.getElementById('api-gemini-count');
+        const imageGenCountDisplay = document.getElementById('api-image-gen-count');
+        const resetCountBtn = document.getElementById('reset-api-count-btn');
+        const zoomModal = document.getElementById('zoom-modal-backdrop');
+        const zoomImg = document.getElementById('zoom-modal-img');
+
+        // --- Elements from image_creator.js ---
+        const promptInput = document.getElementById('prompt'); // Already defined
+        const generateImageBtn = document.getElementById('generate-submit-btn'); // Already defined
+        const generationLoader = document.getElementById('loader'); // Already defined
+        const generationError = document.getElementById('error-message'); // Already defined
+        const generatedImagePreview = document.getElementById('results-container'); // Mapped to results container
+        const generatedImageDisplay = document.getElementById('generated-image'); // Already defined
+        const downloadGeneratedImageBtn = document.getElementById('download-generated-image-btn');
+        const editGeneratedImageBtn = document.getElementById('edit-generated-image-btn');
+
+        const imageEditorSection = document.getElementById('image-editor-section');
+        const canvas = document.getElementById('image-editor-canvas');
+        const ctx = canvas.getContext('2d');
+        const textOverlayInput = document.getElementById('text-overlay-input');
+        const textColorInput = document.getElementById('text-color');
+        const textSizeInput = document.getElementById('text-size');
+        const addTextBtn = document.getElementById('add-text-btn');
+        const filterSelect = document.getElementById('filter-select');
+        const applyFilterBtn = document.getElementById('apply-filter-btn');
+        const resetEditorBtn = document.getElementById('reset-editor-btn');
+        const downloadEditedImageBtn = document.getElementById('download-edited-image-btn');
+
+        // --- MODIFICATION 2: New elements for Image-to-Image ---
+        const i2iForm = document.getElementById('generate-from-image-form');
+        const i2iFileInput = document.getElementById('image-file-input');
+        const i2iFileLabel = document.getElementById('image-file-input-filename');
+        const i2iPreviewContainer = document.getElementById('image-upload-preview-container');
+        const i2iPreviewImg = document.getElementById('image-upload-preview');
+        const i2iSubmitBtn = document.getElementById('generate-from-image-btn');
+        const i2iLoader = document.getElementById('image-to-image-loader');
+        const i2iError = document.getElementById('image-to-image-error');
+        const i2iResultsContainer = document.getElementById('image-to-image-results-container');
+        const i2iOriginalImg = document.getElementById('i2i-original-image');
+        const i2iGeneratedImg = document.getElementById('i2i-generated-image');
+        const i2iDownloadBtn = document.getElementById('i2i-download-btn');
+        const i2iDropZone = document.querySelector('label[for="image-file-input"]');
+        let i2iSelectedFile = null;
+        // --- End of new elements ---
+
+
+        let originalImage = new Image(); // Stores the original generated image for reset
+        let currentImageSrc = ''; // Stores the URL of the current image being edited
+        let currentFilters = []; // To keep track of applied filters
+
+        // --- localStorage Keys (from generate.html) ---
+        const storageKeyPrefix = 'generatePage_';
+        const promptKey = storageKeyPrefix + 'prompt';
+        const imageUrlKey = storageKeyPrefix + 'imageUrl';
+        const geminiStorageKey = storageKeyPrefix + 'geminiApiCount';
+        const imageGenStorageKey = storageKeyPrefix + 'imageGenApiCount';
+        let geminiApiCount = 0;
+        let imageGenApiCount = 0;
+
+        // --- Counter Logic (from generate.html) ---
+        function loadCounts() { /* ... (unchanged) ... */
+            const storedGeminiCount = localStorage.getItem(geminiStorageKey);
+            const storedImageGenCount = localStorage.getItem(imageGenStorageKey);
+            geminiApiCount = storedGeminiCount ? parseInt(storedGeminiCount, 10) : 0;
+            imageGenApiCount = storedImageGenCount ? parseInt(storedImageGenCount, 10) : 0;
+            updateCountDisplays();
+         }
+        function updateCountDisplays() { /* ... (unchanged) ... */
+            const total = geminiApiCount + imageGenApiCount;
+            if (totalCountDisplay) totalCountDisplay.textContent = total;
+            if (geminiCountDisplay) geminiCountDisplay.textContent = geminiApiCount;
+            if (imageGenCountDisplay) imageGenCountDisplay.textContent = imageGenApiCount;
+         }
+        function incrementCount(type) { /* ... (unchanged) ... */
+             if (type === 'gemini') {
+                geminiApiCount++; localStorage.setItem(geminiStorageKey, geminiApiCount.toString());
+            } else if (type === 'imageGen') {
+                imageGenApiCount++; localStorage.setItem(imageGenStorageKey, imageGenApiCount.toString());
+            }
+            updateCountDisplays();
+        }
+        if (resetCountBtn) { resetCountBtn.addEventListener('click', () => { /* ... (unchanged) ... */
+            geminiApiCount = 0; imageGenApiCount = 0; updateCountDisplays();
+            localStorage.removeItem(geminiStorageKey); localStorage.removeItem(imageGenStorageKey);
+            counterDetails.classList.remove('visible'); counterSummary.setAttribute('aria-expanded', 'false');
+        }); }
+        if (counterSummary && counterDetails) { /* ... (unchanged toggle visibility logic) ... */
+            counterSummary.addEventListener('click', (event) => { event.stopPropagation(); const isVisible = counterDetails.classList.toggle('visible'); counterSummary.setAttribute('aria-expanded', isVisible.toString()); });
+            document.addEventListener('click', (event) => { if (!counterDetails.contains(event.target) && !counterSummary.contains(event.target)) { if (counterDetails.classList.contains('visible')) { counterDetails.classList.remove('visible'); counterSummary.setAttribute('aria-expanded', 'false'); } } });
+        }
+        loadCounts();
+
+        // --- Persistence Logic (from generate.html) ---
+        function saveState() {
+            localStorage.setItem(promptKey, mainPromptTextarea.value);
+            if (!resultsContainer.classList.contains('hidden') && generatedImage.src) {
+                localStorage.setItem(imageUrlKey, generatedImage.src);
+            } else {
+                 localStorage.removeItem(imageUrlKey);
+            }
+        }
+        function loadState() {
+            const savedPrompt = localStorage.getItem(promptKey);
+            const savedImageUrl = localStorage.getItem(imageUrlKey);
+            if (savedPrompt) {
+                mainPromptTextarea.value = savedPrompt;
+            }
+            if (savedImageUrl) {
+                currentImageSrc = savedImageUrl; // <-- ADDED from image_creator.js
+                generatedImage.src = savedImageUrl;
+                resultsContainer.classList.remove('hidden');
+            } else {
+                resultsContainer.classList.add('hidden');
+                 generatedImage.src = '';
+            }
+        }
+        mainPromptTextarea.addEventListener('input', saveState);
+
+        // --- Prompt Helper Logic (from generate.html) ---
+        if (ideaBtn) {
+            ideaBtn.addEventListener('click', async () => {
+                const idea = ideaInput.value.trim(); if (!idea) return alert('Please enter an idea.');
+                ideaBtn.setAttribute('aria-busy', 'true'); ideaBtn.disabled = true; suggestionContainer.classList.add('hidden'); errorMessage.classList.add('hidden');
+                try {
+                    const response = await fetch('/generate-prompt-idea', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idea }) });
+                    const data = await response.json(); if (!response.ok) throw new Error(data.error);
+                    suggestionBox.textContent = data.prompt; suggestionContainer.classList.remove('hidden'); incrementCount('gemini');
+                } catch (error) { errorMessage.textContent = `Prompt Idea Error: ${error.message}`; errorMessage.classList.remove('hidden'); }
+                finally { ideaBtn.setAttribute('aria-busy', 'false'); ideaBtn.disabled = false; }
+            });
+        }
+        if (useSuggestionBtn) {
+            useSuggestionBtn.addEventListener('click', () => {
+                const promptText = suggestionBox.textContent;
+                mainPromptTextarea.value = promptText;
+                saveState(); 
+                mainPromptTextarea.focus();
+            });
+        }
+
+        // --- Image Generation Form Logic (MERGED) ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            resultsContainer.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            loader.classList.remove('hidden');
+            generateBtn.disabled = true;
+            imageEditorSection.classList.add('hidden'); // <-- ADDED: Hide editor on new generation
+
+            try {
+                const response = await fetch('/generate-image', { method: 'POST', body: formData });
+                const data = await response.json(); if (!response.ok) throw new Error(data.error || 'An unknown server error occurred.');
+                
+                // This logic is from generate.html
+                currentImageSrc = data.image_url; // <-- ADDED from image_creator.js
+                generatedImage.src = data.image_url;
+                resultsContainer.classList.remove('hidden');
+                incrementCount('imageGen');
+                saveState();
+
+                // --- ADDED: This logic is from image_creator.js ---
+                // Load image into editor for potential editing
+                originalImage.onload = () => {
+                    canvas.width = originalImage.width;
+                    canvas.height = originalImage.height;
+                    drawCanvasImage(originalImage); // Draw original image to canvas
+                };
+                originalImage.src = currentImageSrc;
+                // --- End of added logic ---
+
+            } catch (error) {
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.classList.remove('hidden');
+                 localStorage.removeItem(imageUrlKey);
+            } finally {
+                loader.classList.add('hidden');
+                generateBtn.disabled = false;
+            }
+        });
+
+
+        // --- MODIFICATION 3: New "Generate from Image" Logic ---
+        function handleI2IFileSelect(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Please select an image file.');
+                i2iSelectedFile = null;
+                i2iSubmitBtn.disabled = true;
+                return;
+            }
+            i2iSelectedFile = file;
+            const previewUrl = URL.createObjectURL(file);
+            i2iPreviewImg.src = previewUrl;
+            i2iPreviewContainer.classList.remove('hidden');
+            i2iFileLabel.textContent = file.name;
+            i2iSubmitBtn.disabled = false;
+            
+            // Need to update the file input's files list manually
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(i2iSelectedFile);
+            i2iFileInput.files = dataTransfer.files;
+        }
+
+        if (i2iFileInput) {
+            i2iFileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    handleI2IFileSelect(e.target.files[0]);
+                }
+            });
+        }
+
+        if (i2iDropZone) {
+            i2iDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                i2iDropZone.classList.add('drag-over');
+            });
+            i2iDropZone.addEventListener('dragleave', () => {
+                i2iDropZone.classList.remove('drag-over');
+            });
+            i2iDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                i2iDropZone.classList.remove('drag-over');
+                if (e.dataTransfer.files.length > 0) {
+                    handleI2IFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        if (i2iForm) {
+            i2iForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!i2iSelectedFile) {
+                    alert('Please select an image file to duplicate.');
+                    return;
+                }
+                
+                const formData = new FormData(i2iForm);
+                
+                i2iLoader.classList.remove('hidden');
+                i2iError.classList.add('hidden');
+                i2iResultsContainer.classList.add('hidden');
+                i2iSubmitBtn.setAttribute('aria-busy', 'true');
+                i2iSubmitBtn.disabled = true;
+
+                try {
+                    // Send the image to the new endpoint
+                    const response = await fetch('/generate-image-from-image', {
+                        method: 'POST',
+                        body: formData // Sends the file
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'An unknown server error occurred.');
+                    }
+
+                    // Populate the results
+                    i2iOriginalImg.src = data.original_image_url;
+                    i2iGeneratedImg.src = data.generated_image_url;
+                    i2iDownloadBtn.href = data.generated_image_url;
+                    i2iResultsContainer.classList.remove('hidden');
+                    
+                    // Increment both counters (Gemini for prompt, Image Gen for result)
+                    incrementCount('gemini');
+                    incrementCount('imageGen');
+
+                } catch (error) {
+                    i2iError.textContent = `Error: ${error.message}`;
+                    i2iError.classList.remove('hidden');
+                } finally {
+                    i2iLoader.classList.add('hidden');
+                    i2iSubmitBtn.setAttribute('aria-busy', 'false');
+                    i2iSubmitBtn.disabled = false;
+                }
+            });
+        }
+        // --- End of new logic ---
+
+
+
+        // --- Image Editing Functions (from image_creator.js) ---
+        function drawCanvasImage(img, filters = []) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            if (filters.length > 0) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const pixels = imageData.data;
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i]; const g = pixels[i + 1]; const b = pixels[i + 2];
+                    if (filters.includes('grayscale')) {
+                        const gray = (r + g + b) / 3;
+                        pixels[i] = gray; pixels[i + 1] = gray; pixels[i + 2] = gray;
+                    }
+                    if (filters.includes('sepia')) {
+                        pixels[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+                        pixels[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+                        pixels[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+                    }
+                    if (filters.includes('invert')) {
+                        pixels[i] = 255 - r; pixels[i + 1] = 255 - g; pixels[i + 2] = 255 - b;
+                    }
+                }
+                ctx.putImageData(imageData, 0, 0);
+            }
+        }
+        if (editGeneratedImageBtn) {
+            editGeneratedImageBtn.addEventListener('click', () => {
+                if (currentImageSrc) {
+                    imageEditorSection.classList.remove('hidden');
+                    originalImage.onload = () => {
+                        canvas.width = originalImage.width;
+                        canvas.height = originalImage.height;
+                        drawCanvasImage(originalImage);
+                    };
+                    originalImage.src = currentImageSrc;
+                } else {
+                    alert('Please generate an image first.');
+                }
+            });
+        }
+        if (addTextBtn) {
+            addTextBtn.addEventListener('click', () => {
+                const text = textOverlayInput.value.trim();
+                if (!text || !currentImageSrc) return;
+                drawCanvasImage(originalImage, currentFilters); // Redraw with filters
+                ctx.fillStyle = textColorInput.value;
+                ctx.font = `${textSizeInput.value}px sans-serif`;
+                const textX = 20;
+                const textY = parseInt(textSizeInput.value) + 20;
+                ctx.fillText(text, textX, textY);
+            });
+        }
+        if (applyFilterBtn) {
+            applyFilterBtn.addEventListener('click', () => {
+                if (!currentImageSrc) { alert('Please generate an image first.'); return; }
+                const selectedFilter = filterSelect.value;
+                if (selectedFilter !== 'none') { currentFilters = [selectedFilter]; } 
+                else { currentFilters = []; }
+                drawCanvasImage(originalImage, currentFilters);
+            });
+        }
+        if (resetEditorBtn) {
+            resetEditorBtn.addEventListener('click', () => {
+                if (currentImageSrc) {
+                    currentFilters = [];
+                    drawCanvasImage(originalImage);
+                    textOverlayInput.value = '';
+                    textColorInput.value = '#000000';
+                    textSizeInput.value = '30';
+                    filterSelect.value = 'none';
+                }
+            });
+        }
+
+        // --- Download Functions (from image_creator.js) ---
+        if (downloadGeneratedImageBtn) {
+            downloadGeneratedImageBtn.addEventListener('click', () => {
+                if (currentImageSrc) {
+                    const link = document.createElement('a');
+                    link.href = currentImageSrc;
+                    link.download = `generated_image_${Date.now()}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('No image to download.');
+                }
+            });
+        }
+        if (downloadEditedImageBtn) {
+            downloadEditedImageBtn.addEventListener('click', () => {
+                if (canvas.width && canvas.height) {
+                    const link = document.createElement('a');
+                    link.download = `edited_image_${Date.now()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('No edited image to download.');
+                }
+            });
+        }
+
+        // --- Theme Switcher (from generate.html) ---
+        themeSwitcher.addEventListener('change', () => {
+            const theme = themeSwitcher.checked ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme);
+        });
+        const savedTheme = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', savedTheme); themeSwitcher.checked = savedTheme === 'dark';
+
+        // --- Global Zoom Logic (from generate.html) ---
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('zoomable')) { 
+                if (e.target.closest('#history-modal-content')) {
+                    zoomModal.style.zIndex = "4000"; 
+                } else {
+                    zoomModal.style.zIndex = "3000"; 
+                }
+                zoomImg.src = e.target.src; 
+                zoomModal.classList.remove('hidden'); 
+            }
+            if (e.target.id === 'zoom-modal-backdrop') { 
+                zoomModal.classList.add('hidden'); 
+                zoomImg.src = ''; 
+            }
+        });
+        
+
+         // --- Initialize ClipboardJS (from generate.html) ---
+        const suggestionClipboard = new ClipboardJS('#copy-suggestion-btn');
+        suggestionClipboard.on('success', function(e) {
+            const originalIcon = e.trigger.innerHTML;
+            e.trigger.innerHTML = '<i class="fa-solid fa-check"></i>';
+            e.trigger.classList.add('copied');
+            setTimeout(() => { e.trigger.innerHTML = originalIcon; e.trigger.classList.remove('copied'); }, 1500);
+            e.clearSelection();
+        });
+        suggestionClipboard.on('error', function(e) { alert('Failed to copy suggestion.'); });
+
+        // --- Load state when page loads ---
+        loadState();
+    });
+</script>
+</body>
+</html>

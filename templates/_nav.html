@@ -1,0 +1,33 @@
+<nav class="container-fluid main-nav">
+    <ul>
+        <li><strong><a href="/" class="nav-title-link">🔮 AI Powerd Image Analyzer</a></strong></li>
+    </ul>
+    <ul>
+        {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.path == url_for('dashboard') else '' }}">Dashboard</a></li>
+            <li><a href="{{ url_for('analyzer') }}" class="{{ 'active' if request.path == url_for('analyzer') else '' }}">Analyzer</a></li>
+            <li><a href="{{ url_for('palette_generator') }}" class="{{ 'active' if request.path == url_for('palette_generator') else '' }}">Palette</a></li>
+            <li><a href="{{ url_for('generate') }}" class="{{ 'active' if request.path == url_for('generate') else '' }}">Generate</a></li>
+            <li><a href="{{ url_for('history') }}" class="{{ 'active' if request.path == url_for('history') else '' }}">History</a></li>
+            <li><a href="{{ url_for('about') }}" class="{{ 'active' if request.path == url_for('about') else '' }}">About</a></li>
+            
+            {% if current_user.is_admin %}
+            <li><a href="{{ url_for('admin_panel') }}" style="color: var(--accent-color);">Admin Panel</a></li>
+            {% endif %}
+
+            <li><a href="{{ url_for('logout') }}" class="secondary outline">Logout</a></li>
+
+        {% else %}
+            <li><a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}" class="{{ 'active' if request.path == url_for('about') else '' }}">About</a></li>
+            <li><a href="{{ url_for('login') }}" role="button" class="secondary outline" style="border-color: #0b5ed7;">Login</a></li>
+            <li><a href="{{ url_for('register') }}" role="button" style="background-color: unset; border-color: #0b5ed7 ;" >Register</a></li>
+        {% endif %}
+        <li>
+            <label for="theme-switcher" class="theme-switcher-label">
+                <input type="checkbox" id="theme-switcher" name="theme-switcher" role="switch">
+                Theme
+            </label>
+        </li>
+    </ul>
+</nav>

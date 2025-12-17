@@ -1,0 +1,8 @@
+Flask
+ultralytics
+Pillow
+numpy
+scikit-learn
+opencv-python
+google-generativeai
+requests

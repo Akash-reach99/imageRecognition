@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Powerd Image Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="page-landing"> 
+    {% include '_nav.html' %}
+
+    <main class="container page-wrapper">
+        <section class="hero-section">
+            <hgroup>
+                <h1>AI Powerd Image Analyzer</h1>
+                <p>Analyze, generate, and understand your images with a powerful set of AI tools. Get deep insights, create new art, and find the perfect color palette, all in one place.</p>
+            </hgroup>
+            <a href="{{ url_for('dashboard') }}" role="button" class="hero-cta-button">
+                Get Started 
+                <i class="fa-solid fa-arrow-right-long" style="margin-left: 0.5rem;"></i>
+            </a>
+        </section>
+
+        <section class="feature-grid">
+            
+            <a href="/analyzer" class="feature-card-link">
+                <article class="feature-card">
+                    <div class="card-icon-wrapper" style="--icon-bg: #e6f0ff; --icon-color: #0d6efd;">
+                        <i class="fa-solid fa-microscope"></i>
+                    </div>
+                    <hgroup>
+                        <h3>AI Image Analyzer</h3>
+                        <p>Upload an image for a deep analysis. Get AI captions, object detection, segmentation masks, extracted text (OCR), and more.</p>
+                    </hgroup>
+                    <div class="card-footer-link">
+                        Go to Analyzer <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </article>
+            </a>
+
+            <a href="/palette_generator" class="feature-card-link">
+                <article class="feature-card">
+                    <div class="card-icon-wrapper" style="--icon-bg: #fff0e6; --icon-color: #ff7f0e;">
+                        <i class="fa-solid fa-palette"></i>
+                    </div>
+                    <hgroup>
+                        <h3>Palette Generator</h3>
+                        <p>Extract a beautiful 10-color palette from any image, calculated using the LAB color space for perceptual accuracy.</p>
+                    </hgroup>
+                    <div class="card-footer-link">
+                        Go to Palette <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </article>
+            </a>
+
+            <a href="/generate" class="feature-card-link">
+                <article class="feature-card">
+                    <div class="card-icon-wrapper" style="--icon-bg: #e6fcf5; --icon-color: #198754;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <hgroup>
+                        <h3>AI Image Generator</h3>
+                        <p>Create new images from scratch. Just write a text prompt and let the AI bring your idea to life using Stable Diffusion.</p>
+                    </hgroup>
+                    <div class="card-footer-link">
+                        Go to Generate <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </article>
+            </a>
+
+        </section>
+    </main>
+    
+    <script>
+        // Simple theme switcher logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitcher = document.getElementById('theme-switcher');
+            if (themeSwitcher) { 
+                themeSwitcher.addEventListener('change', () => {
+                    const theme = themeSwitcher.checked ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('theme', theme);
+                });
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeSwitcher.checked = savedTheme === 'dark';
+            }
+        });
+    </script>
+</body>
+</html>
