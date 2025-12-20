@@ -2,10 +2,13 @@
 import requests
 import os
 from requests.auth import HTTPBasicAuth
+from dotenv import load_dotenv # <--- Add this
+
+load_dotenv() # <--- Load variables
 
 # 🔑 Replace with your Imagga API credentials
-API_KEY = "acc_17994a06521b245"
-API_SECRET = "8877d1bb6ed7011df9c568ee16c77494"
+API_KEY = os.getenv('IMAGGA_API_KEY')
+API_SECRET = os.getenv('IMAGGA_API_SECRET')
 
 # --- THIS IS THE CORRECTED LINE ---
 UPLOAD_URL = "https://api.imagga.com/v2/uploads"

@@ -4,10 +4,16 @@ import os
 import uuid
 import time
 from typing import Optional
+from dotenv import load_dotenv  # <--- Add this
 
-# --- PASTE YOUR HUGGING FACE API KEY HERE (or better: set as env var HF_API_KEY) ---
-HF_API_KEY = os.environ.get("HF_API_KEY", "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")
-# IMPORTANT: If this key was checked into source control, revoke it and create a new one.
+load_dotenv()  # <--- Load variables from .env
+
+HF_API_KEY = os.getenv("HF_API_KEY")
+
+if not HF_API_KEY:
+    # Optional: Print a warning or set a dummy value if you want, 
+    # but better to fail if the key is missing.
+    print("[WARNING] HF_API_KEY not found in .env file.")
 # -------------------------------------------
 
 HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}

@@ -222,15 +222,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }); 
     }
 
-    // --- CROPPER LOGIC (HANDLES BOTH PRE & POST ANALYSIS) ---
+    // --- CROPPER & MANUAL LABELING LOGIC ---
 
     // 1. Trigger from "Pre-Analysis" (Upload Screen)
     if (preCropBtn) {
         preCropBtn.addEventListener('click', () => {
             if (!selectedFile) return;
-            isPreCrop = true; // Mark as Pre-Analysis
-            
-            // Read the currently selected file to display in modal
+            isPreCrop = true; 
             const reader = new FileReader();
             reader.onload = (e) => {
                 cropModalImg.src = e.target.result;
@@ -245,8 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (manualCropTrigger) {
         manualCropTrigger.addEventListener('click', () => {
             if (!currentOriginalUrl) return;
-            isPreCrop = false; // Mark as Post-Analysis
-            
+            isPreCrop = false;
             cropModalImg.src = currentOriginalUrl;
             cropModal.classList.remove('hidden');
             initCropper();
@@ -257,11 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cropperInstance) cropperInstance.destroy();
         cropperInstance = new Cropper(cropModalImg, {
             viewMode: 1,
-            autoCropArea: 0.8,
+            autoCropArea: 0.5,
             background: false 
         });
     }
 
+    // Cancel Button
     if (cropCancelBtn) {
         cropCancelBtn.addEventListener('click', () => {
             cropModal.classList.add('hidden');
@@ -269,41 +267,96 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Button A: Analyze Selection (AI Focus)
     if (cropApplyBtn) {
         cropApplyBtn.addEventListener('click', () => {
             if (!cropperInstance) return;
-            
             cropModal.classList.add('hidden');
             
-            // Get cropped canvas
             cropperInstance.getCroppedCanvas().toBlob((blob) => {
                 if (isPreCrop) {
-                    // --- PRE-ANALYSIS PATH ---
-                    // 1. Update global selectedFile so the form uses this blob
                     selectedFile = blob;
-                    
-                    // 2. Update the visual preview on the upload card
-                    const newUrl = URL.createObjectURL(blob);
-                    imagePreview.src = newUrl;
-                    
-                    // 3. Optional: Change label to indicate crop
+                    imagePreview.src = URL.createObjectURL(blob);
                     if (fileInputLabel) fileInputLabel.textContent += " (Cropped)";
-                    
                 } else {
-                    // --- POST-ANALYSIS PATH ---
-                    // Immediately analyze the new blob
                     const formData = new FormData();
                     formData.append('file', blob, 'manual_focus.jpg');
                     const taskCheckboxes = document.querySelectorAll('input[name="tasks"]:checked');
                     taskCheckboxes.forEach(cb => formData.append('tasks', cb.value));
-                    
                     performAnalysis(formData);
                 }
-                
-                // Cleanup
-                cropperInstance.destroy();
-                cropperInstance = null;
+                cropperInstance.destroy(); cropperInstance = null;
             }, 'image/jpeg');
+        });
+    }
+
+    // Button B: Label Selection (Manual Visual Box) -- NEW FEATURE
+    const cropLabelBtn = document.getElementById('crop-label-btn');
+    if (cropLabelBtn) {
+        cropLabelBtn.addEventListener('click', async () => {
+            if (!cropperInstance || isPreCrop) {
+                alert("Please analyze the image first before adding manual labels.");
+                return;
+            }
+
+            const labelName = prompt("Enter the name for this object:");
+            if (!labelName) return;
+
+            // 1. Get Coordinates from Cropper
+            const cropData = cropperInstance.getData(); // x, y, width, height (natural size)
+            const imageData = cropperInstance.getImageData(); // Display size info
+
+            // 2. Close Modal
+            cropModal.classList.add('hidden');
+            cropperInstance.destroy(); cropperInstance = null;
+
+            // 3. Draw Box on UI (Visual)
+            // We need to map "natural" image coordinates to the "displayed" image size
+            const originalImage = document.getElementById('original-image');
+            const wrapper = document.getElementById('original-image-wrapper');
+            
+            // Calculate scaling factor
+            const scaleX = originalImage.clientWidth / originalImage.naturalWidth;
+            const scaleY = originalImage.clientHeight / originalImage.naturalHeight;
+
+            const box = document.createElement('div');
+            box.className = 'manual-box';
+            box.style.position = 'absolute';
+            box.style.border = '2px solid #ff0000'; // Red box
+            box.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+            box.style.color = 'white';
+            box.style.fontWeight = 'bold';
+            box.style.fontSize = '12px';
+            box.style.padding = '2px';
+            box.innerText = labelName;
+            
+            // Position
+            box.style.left = (cropData.x * scaleX) + 'px';
+            box.style.top = (cropData.y * scaleY) + 'px';
+            box.style.width = (cropData.width * scaleX) + 'px';
+            box.style.height = (cropData.height * scaleY) + 'px';
+            
+            wrapper.appendChild(box);
+
+            // 4. Add Text Tag to List (UI)
+            const tagsContainer = document.getElementById('tags-container');
+            const tagElement = document.createElement('span'); 
+            tagElement.className = 'tag'; 
+            tagElement.textContent = labelName; 
+            tagElement.style.border = '1px solid #ff0000'; 
+            tagsContainer.appendChild(tagElement);
+            if(tagsContainer.parentElement.classList.contains('hidden')) {
+                tagsContainer.parentElement.classList.remove('hidden');
+            }
+
+            // 5. Save Tag to Backend (DB)
+            try {
+                await fetch('/add_custom_tag', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tag: labelName, filename: currentFilename })
+                });
+            } catch (e) { console.error("Failed to save tag", e); }
         });
     }
 
@@ -827,4 +880,53 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, 3000);
     }
+
+// --- MANUAL TAGGING LOGIC ---
+    const manualTagInput = document.getElementById('manual-tag-input');
+    const addTagBtn = document.getElementById('add-tag-btn');
+    const tagsContainer = document.getElementById('tags-container');
+
+    if (addTagBtn && manualTagInput) {
+        addTagBtn.addEventListener('click', async () => {
+            const newTag = manualTagInput.value.trim();
+            if (!newTag) return;
+            
+            if (!currentFilename) {
+                alert("No active analysis found.");
+                return;
+            }
+
+            // 1. Optimistically add to UI immediately
+            const tagElement = document.createElement('span'); 
+            tagElement.className = 'tag'; 
+            tagElement.textContent = newTag; 
+            tagElement.style.border = '1px solid var(--pico-primary)'; // Highlight manual tags
+            tagsContainer.appendChild(tagElement);
+            
+            manualTagInput.value = ''; // Clear input
+
+            // 2. Save to Backend (Database)
+            try {
+                const response = await fetch('/add_custom_tag', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tag: newTag,
+                        filename: currentFilename
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) console.error("Failed to save tag:", data.error);
+                
+            } catch (error) {
+                console.error("Error saving manual tag:", error);
+            }
+        });
+        
+        // Allow pressing "Enter" to add
+        manualTagInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTagBtn.click();
+        });
+    }
+
 });

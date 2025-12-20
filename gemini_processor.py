@@ -2,10 +2,16 @@
 import os
 import google.generativeai as genai
 from PIL import Image
+from dotenv import load_dotenv # <--- Add this
+
+load_dotenv() # <--- Load variables
 
 try:
     # --- PASTE YOUR VALID API KEY HERE ---
-    API_KEY = "AIzaSyCymHx1dgjG8vZN8LdJA7UZOCuQqVu00-g" # REMEMBER TO USE YOUR KEY
+    API_KEY = os.getenv('GEMINI_API_KEY')
+    
+    if not API_KEY:
+        raise ValueError("No Gemini API key found in environment variables")
 
     genai.configure(api_key=API_KEY)
     

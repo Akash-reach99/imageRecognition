@@ -134,14 +134,16 @@
             <div id="results-container">
                 <div class="grid two-col-grid">
                     <article class="result-card-original">
-                        <h4>Original Image</h4>
-                        <img id="original-image" src="" alt="Original" class="zoomable">
+    <h4>Original Image</h4>
+    
+    <div id="original-image-wrapper" style="position: relative; display: inline-block; width: 100%;">
+        <img id="original-image" src="" alt="Original" class="zoomable" style="display: block; width: 100%;">
+        </div>
 
-                        <button id="manual-crop-trigger" class="outline contrast small"
-                            style="width: 100%; margin-top: 0.5rem;">
-                            <i class="fa-solid fa-crop-simple"></i> Manual Focus (Fix Detection)
-                        </button>
-                    </article>
+    <button id="manual-crop-trigger" class="outline contrast small" style="width: 100%; margin-top: 0.5rem;">
+        <i class="fa-solid fa-crop-simple"></i> Manual Focus / Labeling
+    </button>
+</article>
 
                     <article id="metadata-result-card" class="result-card-metadata analysis-card">
                         <h4>Metadata</h4>
@@ -155,7 +157,17 @@
                         <h3>🏷️ Smart Tags (Combined)</h3>
                     </hgroup>
                     <p>Tags from all selected sources (YOLO, Gemini, Imagga), combined and duplicates removed.</p>
+
                     <div id="tags-container" class="tag-container"></div>
+
+                    <div
+                        style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--pico-muted-border-color); display: flex; gap: 0.5rem; align-items: center;">
+                        <i class="fa-solid fa-plus-circle muted"></i>
+                        <input type="text" id="manual-tag-input" placeholder="Missed something? Add a tag..."
+                            style="margin-bottom: 0; font-size: 0.9em;">
+                        <button id="add-tag-btn" class="secondary outline small"
+                            style="margin-bottom: 0; white-space: nowrap;">Add Tag</button>
+                    </div>
                 </article>
 
                 <article id="imagga-results" class="hidden">
@@ -407,19 +419,27 @@
     </div>
 
     <div id="crop-modal-backdrop" class="crop-modal-backdrop hidden">
-        <div class="crop-modal-content">
-            <h4 style="margin-bottom: 1rem;">Manual Focus: Crop to Subject</h4>
-            <div class="crop-container">
-                <img id="crop-modal-img" src="" alt="Image to Crop">
-            </div>
-            <p style="font-size: 0.9em; margin-bottom: 1rem;" class="muted">Drag the corners to focus on the object you
-                want the AI to analyze.</p>
-            <div class="crop-actions">
-                <button type="button" id="crop-cancel-btn" class="secondary outline">Cancel</button>
-                <button type="button" id="crop-apply-btn">Analyze Selection</button>
-            </div>
+    <div class="crop-modal-content">
+        <h4 style="margin-bottom: 1rem;">Manual Focus & Labeling</h4>
+        <div class="crop-container">
+            <img id="crop-modal-img" src="" alt="Image to Crop">
+        </div>
+        <p style="font-size: 0.9em; margin-bottom: 1rem;" class="muted">
+            Select the object area. Then choose to <strong>Analyze</strong> it (AI) or just <strong>Label</strong> it (Manual).
+        </p>
+        <div class="crop-actions">
+            <button type="button" id="crop-cancel-btn" class="secondary outline">Cancel</button>
+            
+            <button type="button" id="crop-label-btn" class="outline" style="margin-right: auto;">
+                <i class="fa-solid fa-tag"></i> Label Selection
+            </button>
+            
+            <button type="button" id="crop-apply-btn">
+                <i class="fa-solid fa-microchip"></i> Analyze Selection
+            </button>
         </div>
     </div>
+</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>

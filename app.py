@@ -7,6 +7,8 @@ import re
 import random
 from collections import Counter
 from datetime import datetime, timedelta
+from dotenv import load_dotenv  # <--- Add this
+load_dotenv()
 from flask import (
     Flask, request, render_template, jsonify, send_from_directory,
     send_file, flash, redirect, url_for, abort, session
@@ -57,8 +59,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'studytime5567@gmail.com' # <--- REPLACE THIS
-app.config['MAIL_PASSWORD'] = 'eskx wjni svqc gdey'    # <--- REPLACE THIS
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = 'noreply@ai-image-analyzer.com'
 
 # --- OBJECT INITIALIZATIONS ---
@@ -1271,6 +1273,47 @@ def delete_history_entry():
         conn.rollback()
         print(f"[ERROR] Failed to delete history entry {history_id}: {e}")
         return jsonify({'error': 'An internal error occurred.'}), 500
+    finally:
+        conn.close()
+
+# Inside projectp10/app.py
+
+@app.route('/add_custom_tag', methods=['POST'])
+@login_required
+def add_custom_tag():
+    data = request.get_json()
+    tag_name = data.get('tag')
+    filename = data.get('filename')
+    
+    if not tag_name or not filename:
+        return jsonify({'error': 'Missing data'}), 400
+        
+    # Find the image entry in history
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database error'}), 500
+        
+    try:
+        cursor = conn.cursor()
+        # Get image ID
+        cursor.execute("SELECT id FROM upload_history WHERE filename = ?", (filename,))
+        row = cursor.fetchone()
+        
+        if row:
+            image_id = row['id']
+            # Save the new Manual tag
+            cursor.execute(
+                "INSERT INTO image_tags (image_id, tag_name, source, confidence) VALUES (?, ?, ?, ?)",
+                (image_id, tag_name, 'Manual', 1.0)
+            )
+            conn.commit()
+            return jsonify({'status': 'success', 'tag': tag_name})
+        else:
+            return jsonify({'error': 'Image not found in history'}), 404
+            
+    except Exception as e:
+        print(f"[ERROR] Failed to add manual tag: {e}")
+        return jsonify({'error': str(e)}), 500
     finally:
         conn.close()
 

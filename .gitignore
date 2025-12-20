@@ -62,3 +62,4 @@ static/processed/*
 # ==============================
 build/
 dist/
+.env
