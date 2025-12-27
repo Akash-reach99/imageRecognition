@@ -53,6 +53,7 @@
             gap: 1rem;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body class="page-analyzer">
@@ -203,7 +204,7 @@
                                         <h4 class="gemini-section-title">Summary</h4>
                                     </summary>
                                     <div class="copyable-container">
-                                        <p id="gemini-summary-content"></p>
+                                        <div id="gemini-summary-content" class="markdown-content"></div>
                                         <button class="copy-btn" data-clipboard-target="#gemini-summary-content"><i
                                                 class="fa-regular fa-copy"></i></button>
                                     </div>
@@ -215,7 +216,7 @@
                                         <h4 class="gemini-section-title">Detailed Description</h4>
                                     </summary>
                                     <div class="copyable-container">
-                                        <pre id="gemini-detailed-description-content"></pre>
+                                        <div id="gemini-detailed-description-content" class="markdown-content"></div>
                                         <button class="copy-btn"
                                             data-clipboard-target="#gemini-detailed-description-content"><i
                                                 class="fa-regular fa-copy"></i></button>
@@ -250,7 +251,7 @@
                             <div class="gemini-output-section">
                                 <details class="collapsible-section">
                                     <summary>
-                                        <h4 class="gemini-section-title">Hidden Details</h4>
+                                        <h4 class="gemini-section-title">Key Obsevation</h4>
                                     </summary>
                                     <div class="copyable-container">
                                         <div id="gemini-hidden-details-content"></div>

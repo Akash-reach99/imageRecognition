@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - AI Powerd Image Analyzer</title>
+    <title>Verify Registration - AI Powerd Image Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="page-auth">
     {% include '_nav.html' %}
 
     <main class="container page-wrapper auth-container">
         <article class="auth-card">
-            <hgroup>
-                <h1>Create Your Account</h1>
-                <p>Get access to the full suite of AI tools.</p>
+            <hgroup style="text-align: center; margin-bottom: 2rem;">
+                <h1>Verify Your Email</h1>
+                <p>We sent a code to your email address to complete your registration.</p>
             </hgroup>
-
+            
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -24,30 +25,25 @@
                 {% endif %}
             {% endwith %}
 
-            <form method="POST" action="{{ url_for('register') }}">
-                <label for="username">
-                    Username
-                    <input type="text" id="username" name="username" required>
-                </label>
-                <label for="email">
-                    Email
-                    <input type="email" id="email" name="email" required>
-                    <small>We will send a verification code to this address.</small>
-                </label>
-                <label for="password">
-                    Password
-                    <input type="password" id="password" name="password" required>
+            <form method="POST" action="{{ url_for('verify_registration') }}" class="auth-form">
+                <label for="otp">
+                    Enter Verification Code
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <input type="text" id="otp" name="otp" placeholder="e.g. 123456" required autocomplete="off" style="letter-spacing: 0.2em; font-size: 1.2em; text-align: center;">
+                    </div>
                 </label>
                 
-                <button type="submit">Next: Verify Email</button>
+                <button type="submit" class="contrast">Verify & Create Account</button>
             </form>
-            <hr>
-            <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+            
+            <div class="auth-footer">
+                <p>Wrong email? <a href="{{ url_for('register') }}">Start over</a>.</p>
+            </div>
         </article>
     </main>
     
     <script>
-        // Simple theme switcher logic
         document.addEventListener('DOMContentLoaded', () => {
             const themeSwitcher = document.getElementById('theme-switcher');
             if (themeSwitcher) { 

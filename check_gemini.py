@@ -3,7 +3,7 @@ import google.generativeai as genai
 import pkg_resources
 
 # --- PASTE YOUR API KEY HERE ---
-API_KEY = "AIzaSyChh1lPkyuOuPMZadZKw4zrZQqcJPi2sd4"
+API_KEY = "AIzaSyASaTHF4v6TE0Ot1faRQfPSyzDcGqy4qYY"
 
 try:
     # --- 1. Print the library version ---
