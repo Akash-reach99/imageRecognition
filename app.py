@@ -7,7 +7,7 @@ import re
 import random
 from collections import Counter
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # <--- Add this
 load_dotenv()
 from flask import (
     Flask, request, render_template, jsonify, send_from_directory,
@@ -17,21 +17,12 @@ from PIL import Image
 # --- EXIF Fix ---
 from PIL.ExifTags import TAGS, GPSTAGS
 from ultralytics import YOLO
-from ultralytics.engine.results import Results
+from ultralytics.engine.results import Results # Added for type hinting
 from werkzeug.utils import secure_filename
 from sklearn.cluster import KMeans
 import numpy as np
 import cv2
 from io import BytesIO
-
-# --- NEW: ReportLab Imports for PDF Generation ---
-# This fixes the "NameError: name 'SimpleDocTemplate' is not defined"
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib import colors
-from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_JUSTIFY
 
 # --- IMPORTS FOR LOGIN, POSTGRESQL & MAIL ---
 from flask_sqlalchemy import SQLAlchemy
@@ -40,7 +31,7 @@ from flask_login import (
     login_required, current_user
 )
 from flask_bcrypt import Bcrypt
-from flask_mail import Mail, Message
+from flask_mail import Mail, Message # <--- Added Flask-Mail
 
 # --- Import AI processors ---
 from gemini_processor import get_gemini_analysis, get_gemini_text_prompt 
@@ -64,6 +55,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1122@localhost/im
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- EMAIL CONFIGURATION (GMAIL EXAMPLE) ---
+# You must generate an "App Password" in your Google Account settings if using Gmail.
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -75,7 +67,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'noreply@ai-image-analyzer.com'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
-mail = Mail(app)
+mail = Mail(app) # <--- Initialize Mail
 
 # Configure login manager
 login_manager.login_view = 'login' 
@@ -92,6 +84,7 @@ try:
     yolo_models = {
         'detection': YOLO('yolov8l.pt'),
         'segmentation': YOLO('yolov8l-seg.pt'),
+       
     }
     print("[INFO] All YOLO models loaded successfully!")
 except Exception as e:
@@ -106,7 +99,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=True)
+    password_hash = db.Column(db.String(255), nullable=True) # Nullable if only using Email OTP login
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
@@ -453,7 +446,7 @@ def verify_otp():
         else:
             flash('Invalid or expired OTP. Please try again.', 'danger')
             
-    return render_template('verify_otp.html') 
+    return render_template('verify_otp.html') # You will need to create this template
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -465,7 +458,7 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # 1. Check if user or email already exists in DB
+        # Check if user or email already exists
         existing_user = User.query.filter(
             (User.username == username) | (User.email == email)
         ).first()
@@ -474,83 +467,20 @@ def register():
             flash('Username or email already exists.', 'danger')
             return redirect(url_for('register'))
 
-        # 2. Generate OTP
-        otp = str(random.randint(100000, 999999))
-        expiry_str = (datetime.utcnow() + timedelta(minutes=10)).isoformat()
-
-        # 3. Hash password NOW so we don't store plain text in session cookies
-        pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-
-        # 4. Store details in Session temporarily
-        session['register_data'] = {
-            'username': username,
-            'email': email,
-            'pw_hash': pw_hash,
-            'otp': otp,
-            'expiry': expiry_str
-        }
-
-        # 5. Send Email
+        # Create new user
+        new_user = User(username=username, email=email)
+        new_user.set_password(password)
+        
         try:
-            msg = Message('Verify Registration', recipients=[email])
-            msg.body = f"Welcome to AI Image Analyzer!\n\nYour registration verification code is: {otp}\n\nThis code expires in 10 minutes."
-            mail.send(msg)
-            
-            flash('Verification code sent to your email. Please verify to complete registration.', 'info')
-            return redirect(url_for('verify_registration'))
-            
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Account created! You can now log in.', 'success')
+            return redirect(url_for('login'))
         except Exception as e:
-            print(f"Mail Error: {e}")
-            flash('Failed to send verification email. Please try again.', 'danger')
-            return redirect(url_for('register'))
+            db.session.rollback()
+            flash(f'Error creating account: {e}', 'danger')
 
     return render_template('register.html')
-
-@app.route('/verify_registration', methods=['GET', 'POST'])
-def verify_registration():
-    # If no registration data in session, kick them back to start
-    if 'register_data' not in session:
-        return redirect(url_for('register'))
-    
-    if request.method == 'POST':
-        entered_otp = request.form.get('otp')
-        reg_data = session['register_data']
-        
-        # 1. Check Expiry
-        expiry = datetime.fromisoformat(reg_data['expiry'])
-        if datetime.utcnow() > expiry:
-            flash('OTP has expired. Please register again.', 'danger')
-            session.pop('register_data', None) # Clear invalid data
-            return redirect(url_for('register'))
-            
-        # 2. Check OTP Match
-        if entered_otp == reg_data['otp']:
-            # OTP Valid! Now we actually create the user in the DB
-            try:
-                # Create user with the pre-hashed password
-                new_user = User(
-                    username=reg_data['username'], 
-                    email=reg_data['email'],
-                    password_hash=reg_data['pw_hash'] # Use the hash we stored
-                )
-                
-                db.session.add(new_user)
-                db.session.commit()
-                
-                # Cleanup session
-                session.pop('register_data', None)
-                
-                flash('Account created successfully! You can now log in.', 'success')
-                return redirect(url_for('login'))
-                
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error saving user to database: {e}', 'danger')
-                return redirect(url_for('register'))
-        else:
-            flash('Invalid verification code. Please try again.', 'danger')
-
-    return render_template('verify_register.html')
 
 @app.route('/logout')
 @login_required
@@ -634,154 +564,6 @@ def history():
         except Exception as e: print(f"[ERROR] Failed to search history: {e}")
         finally: conn.close()
     return render_template('history.html', records=records, search_query=search_query)
-
-# --- NEW: PDF Download Route ---
-@app.route('/history/download_pdf/<int:record_id>')
-@login_required
-def download_pdf(record_id):
-    conn = get_db_connection()
-    record = conn.execute("SELECT * FROM upload_history WHERE id = ?", (record_id,)).fetchone()
-    
-    if not record:
-        conn.close()
-        flash('Record not found.', 'danger')
-        return redirect(url_for('history'))
-
-    # Fetch Tags
-    tags_cursor = conn.execute("SELECT tag_name, confidence FROM image_tags WHERE image_id = ?", (record_id,))
-    tags = tags_cursor.fetchall()
-    conn.close()
-
-    # Parse Data
-    filename = record['filename']
-    predictions = json.loads(record['predictions'])
-    timestamp = record['upload_timestamp']
-    
-    # Determine Image Path
-    is_generated = 'generation' in predictions.get('source', '')
-    folder = app.config['GENERATED_FOLDER'] if is_generated else app.config['UPLOAD_FOLDER']
-    image_path = os.path.join(folder, filename)
-
-    # --- PDF Generation ---
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='Justify', alignment=TA_JUSTIFY))
-    styles.add(ParagraphStyle(name='WrapBold', parent=styles['Normal'], fontSize=10, leading=12))
-    
-    story = []
-
-    # 1. Title
-    story.append(Paragraph(f"Analysis Report", styles['Title']))
-    story.append(Paragraph(f"File: {filename}", styles['Heading3']))
-    story.append(Paragraph(f"Date: {timestamp}", styles['Normal']))
-    story.append(Spacer(1, 12))
-
-    # 2. Image (Scaled to fit page)
-    if os.path.exists(image_path):
-        try:
-            img = RLImage(image_path)
-            # Max width 6 inches, Max height 5 inches
-            max_width = 6 * inch
-            max_height = 5 * inch
-            
-            img_width = img.drawWidth
-            img_height = img.drawHeight
-            
-            # Scale down if too wide
-            if img_width > max_width:
-                scale = max_width / img_width
-                img_width = max_width
-                img_height = img_height * scale
-            
-            # Scale down if still too tall
-            if img_height > max_height:
-                scale = max_height / img_height
-                img_height = max_height
-                img_width = img_width * scale
-                
-            img.drawHeight = img_height
-            img.drawWidth = img_width
-            story.append(img)
-        except Exception as e:
-            story.append(Paragraph(f"[Image Error: {e}]", styles['Normal']))
-    story.append(Spacer(1, 12))
-
-    # 3. Gemini Analysis
-    if 'gemini' in predictions:
-        gemini = predictions['gemini']
-        story.append(Paragraph("AI Analysis (Gemini)", styles['Heading2']))
-        
-        if 'caption' in gemini:
-            story.append(Paragraph("<b>Caption:</b>", styles['Heading4']))
-            story.append(Paragraph(gemini['caption'], styles['Normal']))
-            story.append(Spacer(1, 6))
-
-        if 'summary' in gemini:
-            story.append(Paragraph("<b>Summary:</b>", styles['Heading4']))
-            # Replace newlines for PDF
-            summary_text = gemini['summary'].replace('\n', '<br/>')
-            story.append(Paragraph(summary_text, styles['Normal']))
-            story.append(Spacer(1, 6))
-            
-        if 'detailed_prompt' in gemini:
-            story.append(Paragraph("<b>Detailed Analysis:</b>", styles['Heading4']))
-            # Clean Markdown bolding for PDF
-            text = gemini['detailed_prompt'].replace('**', '').replace('\n', '<br/>')
-            story.append(Paragraph(text, styles['Normal']))
-            story.append(Spacer(1, 6))
-
-    # 4. Tags
-    if tags:
-        story.append(Paragraph("Detected Tags", styles['Heading2']))
-        tag_list = [f"{t['tag_name']} ({t['confidence'] if t['confidence'] else 'AI'})" for t in tags]
-        story.append(Paragraph(", ".join(tag_list), styles['Normal']))
-        story.append(Spacer(1, 12))
-
-    # 5. Metadata Table
-    if 'metadata' in predictions and predictions['metadata']:
-        story.append(Paragraph("Metadata", styles['Heading2']))
-        data = [['Property', 'Value']]
-        for section, values in predictions['metadata'].items():
-            if isinstance(values, dict):
-                for k, v in values.items():
-                    # Wrap long text
-                    val_str = str(v)
-                    # Create Paragraphs for table cells to allow wrapping
-                    data.append([
-                        Paragraph(f"<b>{section} - {k}</b>", styles['WrapBold']),
-                        Paragraph(val_str, styles['WrapBold'])
-                    ])
-        
-        if len(data) > 1:
-            t = Table(data, colWidths=[2.5*inch, 3.5*inch])
-            t.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ]))
-            story.append(t)
-            story.append(Spacer(1, 12))
-
-    # 6. OCR Text
-    if 'ocr' in predictions and predictions['ocr'].get('extracted_text'):
-        story.append(Paragraph("Extracted Text (OCR)", styles['Heading2']))
-        ocr_text = predictions['ocr']['extracted_text'].replace('\n', '<br/>')
-        story.append(Paragraph(ocr_text, styles['Normal']))
-
-    doc.build(story)
-    buffer.seek(0)
-    
-    return send_file(
-        buffer, 
-        as_attachment=True, 
-        download_name=f"Report_{filename}.pdf", 
-        mimetype='application/pdf'
-    )
 
 
 # --- ADMIN PANEL ROUTES ---
@@ -891,59 +673,25 @@ def analyze_image():
             db_predictions['metadata'] = exif_data
 
         if 'gemini_description' in tasks:
-            # UPDATED PROMPT: Requesting Markdown for the Main Analysis
             gemini_prompt = (
                 "Analyze the provided image and generate the following content sections, separated ONLY by '%%%':\n"
                 "1.  **Caption:** A creative and concise caption (1-7 words).\n"
                 "2.  **Summary:** A brief summary describing the main subject and mood (1-2 sentences).\n"
-                "3.  **Detailed Description:** A detailed analysis using **Markdown formatting**. "
-                "Use **bold** for key visual elements, colors, or objects. "
-                "Use bullet points (-) to list distinct features. "
-                "End with '**Stable Diffusion Prompt Suggestions:**' containing 1-2 optimized prompts.\n"
-                "4.  **Social Media Post:** A short, engaging post with hashtags.\n"
-                "5.  **Hidden Details:** List 1-3 subtle details using bullet points (-) and **bold** highlights, or 'No specific hidden details noted.'.\n"
-                "6.  **Q&A Suggestions:** Generate 3 short, intriguing questions (max 8 words each) a user might ask about this image. Separate them with '|||'.\n"
-                "Ensure '%%%' is the ONLY separator between these 6 numbered sections."
+                "3.  **Detailed Description & Prompt:** A detailed analysis (1-2 paragraphs) focusing on visual elements (subject, setting, style, lighting, composition, colors). End this section with a bullet point list under the heading '**Stable Diffusion Prompt Suggestions:**' containing 1-2 optimized, comma-separated prompts suitable for Stable Diffusion (include style keywords like 'photorealistic', 'cinematic', 'illustration', etc.).\n"
+                "4.  **Social Media Post:** A short, engaging post for social media (1-3 sentences) including 3-5 relevant hashtags.\n"
+                "5.  **Hidden Details:** List 1-3 subtle or interesting details often missed, using bullet points like '* Detail: [Location hint]'. If none, state 'No specific hidden details noted.'\n"
+                "Ensure '%%%' is the ONLY separator between these 5 numbered sections."
             )
 
             full_response = get_gemini_analysis(original_path, gemini_prompt)
-            # FIXED: Removed Duplicate Call
             parts = full_response.split('%%%')
-
-            # Parse the new section
-            # --- ULTIMATE SMART PARSER FIX ---
-            
-            # 1. Get the raw text (Targeting Section 6 / Index 5)
-            if len(parts) > 5:
-                suggestions_raw = parts[5].replace('6. **Q&A Suggestions:**', '').strip()
-            else:
-                suggestions_raw = "Describe the colors\nWhat is the mood?\nIdentify the objects"
-
-            # 2. Normalize Separators (The Key Fix)
-            # Replace '|||' AND '||' with a standard Newline character ('\n')
-            normalized_text = suggestions_raw.replace('|||', '\n').replace('||', '\n')
-
-            # 3. Split by Newline and Clean
-            suggestions_list = []
-            for line in normalized_text.split('\n'):
-                # Clean up "1.", "2.", "-", "*" from the start
-                clean = line.strip().lstrip('0123456789.-* ').strip()
-                # Filter out empty lines or tiny junk
-                if len(clean) > 5: 
-                    suggestions_list.append(clean)
-
-            # 4. Limit to top 3
-            suggestions_list = suggestions_list[:3]
-            
-            # --- END FIX ---
 
             gemini_data = {
                 'caption': parts[0].replace('1. **Caption:**', '').strip() if len(parts) > 0 else "Analysis Error",
                 'summary': parts[1].replace('2. **Summary:**', '').strip() if len(parts) > 1 else "",
                 'detailed_prompt': parts[2].replace('3. **Detailed Description & Prompt:**', '').strip() if len(parts) > 2 else "",
                 'social_post': parts[3].replace('4. **Social Media Post:**', '').strip() if len(parts) > 3 else "",
-                'hidden_details': parts[4].replace('5. **Hidden Details:**', '').strip() if len(parts) > 4 else "",
-                'suggestions': suggestions_list # <--- SEND TO FRONTEND
+                'hidden_details': parts[4].replace('5. **Hidden Details:**', '').strip() if len(parts) > 4 else ""
             }
             response_data['results']['gemini'] = gemini_data
             db_predictions['gemini'] = gemini_data
@@ -1021,7 +769,7 @@ def analyze_image():
                 "detections": ocr_text_list  # <--- ADD THIS LINE
             }
             response_data['results']['ocr'] = ocr_result_data
-            # FIXED: Removed Duplicate Assignment
+            response_data['results']['ocr'] = ocr_result_data
             db_predictions['ocr'] = ocr_result_data
 
         if 'imagga_tags' in tasks:
@@ -1162,16 +910,11 @@ def analyze_image():
 
         return jsonify(response_data)
 
-    # In app.py -> def analyze_image():
-
     except Exception as e:
         print(f"[ERROR] An error occurred during analysis: {e}")
         import traceback
         traceback.print_exc()
-        # REPLACE THIS LINE:
-        # return jsonify({'error': 'An unexpected error occurred during analysis.'}), 500
-        # WITH THIS LINE:
-        return jsonify({'error': f'Analysis Error: {str(e)}'}), 500
+        return jsonify({'error': 'An unexpected error occurred during analysis.'}), 500
 
 @app.route('/ask', methods=['POST'])
 @login_required
@@ -1180,22 +923,8 @@ def ask_analyzer_question():
     if not data or 'question' not in data or 'filename' not in data: return jsonify({'error': 'Missing data'}), 400
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(data['filename']))
     if not os.path.exists(filepath): return jsonify({'error': f'Image file not found: {data["filename"]}'}), 404
-    
-    try: 
-        # UPDATED PROMPT: Request Markdown structure
-        # UPDATED PROMPT: Direct Answer Focus
-        prompt = (
-            f"The user is asking a specific question about this image: '{data['question']}'. "
-            "1. Answer the question DIRECTLY and IMMEDIATELY. "
-            "2. Do NOT start with a generic image description or visual analysis unless the user explicitly asks 'What is this?'. "
-            "3. If the user asks for 'benefits', 'history', or 'recipe', provide ONLY that information relevant to the image subject. "
-            "4. Keep the formatting rules: Use **bold** for key facts and bullet points for lists."
-        )
-        answer = get_gemini_analysis(filepath, prompt)
-        return jsonify({'answer': answer})
-    except Exception as e: 
-        print(f"[ERROR] Follow-up failed: {e}")
-        return jsonify({'error': 'Failed to get answer.'}), 500
+    try: answer = get_gemini_analysis(filepath, data['question']); return jsonify({'answer': answer})
+    except Exception as e: print(f"[ERROR] Follow-up failed: {e}"); return jsonify({'error': 'Failed to get answer.'}), 500
 
 @app.route('/palette', methods=['POST'])
 @login_required
@@ -1292,13 +1021,7 @@ def generate_prompt_idea():
         generated_prompt = get_gemini_text_prompt(formatted_prompt)
         if generated_prompt.startswith("Error:"): raise Exception(generated_prompt)
         return jsonify({'prompt': generated_prompt.strip()})
-    # ... inside the try/except block ...
-    except Exception as e: 
-        print(f"[ERROR] Prompt idea generation failed: {e}"); 
-        # REPLACE THIS LINE:
-        # return jsonify({'error': 'Failed to generate prompt idea.'}), 500
-        # WITH THIS LINE:
-        return jsonify({'error': f'Prompt Gen Failed: {str(e)}'}), 500
+    except Exception as e: print(f"[ERROR] Prompt idea generation failed: {e}"); return jsonify({'error': 'Failed to generate prompt idea.'}), 500
 
 @app.route('/generate-image-from-image', methods=['POST'])
 @login_required
@@ -1319,16 +1042,14 @@ def generate_image_from_image_api():
         file.save(original_path)
         original_image_url = f"/uploads/{unique_filename}"
 
-        # 2. Get User's Selected Style
-        selected_style = request.form.get('style', 'none')
-
-        # 3. Use Gemini to generate a prompt *from* this image
-        # We ask Gemini to describe the content.
+        # 2. Use Gemini to generate a prompt *from* this image
         replication_prompt = (
             "Analyze this image and generate a highly detailed, comma-separated "
             "Stable Diffusion prompt that would recreate it. Focus on subject, "
-            "setting, colors, lighting, and composition. "
-            "The prompt should be a single, long string of keywords."
+            "setting, art style (e.g., 'photorealistic', 'oil painting', 'anime'), "
+            "colors, lighting, and composition. The prompt should be a single, "
+            "long string of keywords. Do not include any other text, "
+            "explanation, or preamble. Just return the prompt."
         )
         
         generated_prompt = get_gemini_analysis(original_path, replication_prompt)
@@ -1337,53 +1058,21 @@ def generate_image_from_image_api():
             raise Exception(f"Gemini failed to create a prompt: {generated_prompt}")
 
         cleaned_prompt = generated_prompt.strip().replace('\n', ', ').replace('*', '')
+        print(f"[INFO] Generated replication prompt: {cleaned_prompt}")
 
-        # --- STYLE LOGIC START ---
-        
-        # 1. Define Styles (With Weights for Stability AI)
-        style_presets = {
-            "cinematic": "(cinematic lighting:1.2), (movie still:1.2), ultra-detailed, 8k, dramatic atmosphere",
-            "anime": "(anime style:1.3), (studio ghibli:1.2), vibrant colors, clean lines, 2d illustration",
-            "photographic": "(realistic photograph:1.2), 4k, raw photo, dslr, sharp focus",
-            "digital-art": "(digital painting:1.2), concept art, smooth, sharp focus, artstation",
-            "pixel-art": "(pixel art:1.5), (16-bit:1.4), (retro game style:1.3), blocky, low resolution", 
-            "3d-model": "(low poly:1.3), (isometric:1.2), 3d render, blender, minimal",
-            "neon-punk": "(cyberpunk:1.2), neon lights, synthwave, futuristic, dark background"
-        }
-
-        # 2. Initialize final_prompt with the base prompt
-        final_prompt = cleaned_prompt 
-
-        # 3. Prepend Style if selected
-        if selected_style in style_presets and selected_style != 'none':
-            style_keywords = style_presets[selected_style]
-            # Put style keywords FIRST so the AI prioritizes them
-            final_prompt = f"{style_keywords}, {cleaned_prompt}"
-            print(f"[INFO] Applied Style '{selected_style}' to FRONT of prompt.")
-
-        # --- STYLE LOGIC END ---
-
-        print(f"[INFO] Final Prompt: {final_prompt}")
-
-        # 4. GENERATE (Using 'final_prompt')
+        # 3. Use the new prompt to generate an image
         generated_filename = generate_image_from_prompt(
-            final_prompt,   # <--- CRITICAL: Must be final_prompt
+            cleaned_prompt, 
             app.config['GENERATED_FOLDER']
         )
         
         generated_image_url = f"/generated/{generated_filename}"
         
-        # 5. Save to History (Using 'final_prompt')
         predictions_data = {
             "source": "generation-i2i",
-            "prompt": final_prompt,  # <--- Update this too
-            "style_used": selected_style,
+            "prompt": cleaned_prompt,
             "gemini": { "caption": "AI Image-to-Image" }
         }
-        
-        # ... (rest of the DB saving code remains the same) ...
-        # --- NEW CODE END --
-        
         conn = get_db_connection()
         if conn:
             try:
@@ -1398,7 +1087,7 @@ def generate_image_from_image_api():
             finally:
                 conn.close()
 
-        # 6. Return both URLs to the frontend
+        # 4. Return both URLs to the frontend
         return jsonify({
             'original_image_url': original_image_url,
             'generated_image_url': generated_image_url

@@ -205,15 +205,11 @@ details.collapsible-section[open] > .copyable-container { border-left: 2px solid
 a.tag:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
 
 /* --- 11. Responsive Adjustments --- */
-/* --- 11. Responsive Adjustments --- */
 @media (max-width: 768px) {
     .main-nav ul { gap: 0.5rem; } .main-nav ul li a { padding: 0.5rem; font-size: 0.9em; } .main-nav ul li:first-child strong a { font-size: 1em; }
     .two-col-grid { grid-template-columns: 1fr; }
     .grid-class-2-col-input-btn { grid-template-columns: 1fr; }
-    .history-gallery-grid { grid-template-columns: 1fr; gap: 1rem; }
-    
-    /* ADD: Stack YOLO cards on mobile too */
-    .yolo-card-grid { grid-template-columns: 1fr; }
+    .history-gallery-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
     .modal-body-grid { grid-template-columns: 1fr; } .modal-details-column { max-height: 40vh; padding-right: 0; }
     .qa-suggestions-class { justify-content: center; }
 }
@@ -1288,99 +1284,4 @@ button.copy-btn-mini:hover {
 
 @keyframes toastOut {
     to { opacity: 0; transform: translateY(-20px); }
-}
-/* static/style.css - Add to bottom */
-
-/* --- Markdown Answer Styling --- */
-#answer-text {
-    line-height: 1.6;
-    font-size: 0.95em;
-    color: var(--pico-color);
-}
-
-#answer-text strong {
-    color: var(--pico-primary);
-    font-weight: 700;
-}
-
-#answer-text ul {
-    padding-left: 1.2rem;
-    margin-bottom: 1rem;
-}
-
-#answer-text li {
-    margin-bottom: 0.25rem;
-}
-
-#answer-text blockquote {
-    border-left: 4px solid var(--accent-color);
-    background: var(--pico-card-background-color);
-    padding: 0.5rem 1rem;
-    margin: 1rem 0;
-    font-style: italic;
-    color: var(--pico-muted-color);
-}
-
-/* --- Animations --- */
-@keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fadeInUp {
-    0% { transform: translateY(10px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
-}
-
-/* Ensure suggestions look clickable */
-.qa-suggestion-btn {
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-.qa-suggestion-btn:hover {
-    transform: translateY(-2px);
-    background-color: var(--pico-primary-hover);
-    color: white;
-    border-color: var(--pico-primary-hover);
-}
-/* --- Enhanced Markdown Styling (Applies to Q&A AND Analysis) --- */
-
-/* Apply to both the Q&A box and the new analysis divs */
-#answer-text, .markdown-content {
-    line-height: 1.6;
-    font-size: 1rem;
-    color: var(--pico-color);
-}
-
-/* Bold Text */
-#answer-text strong, .markdown-content strong {
-    color: var(--pico-primary);
-    font-weight: 700;
-}
-
-/* Lists */
-#answer-text ul, .markdown-content ul {
-    padding-left: 1.2rem;
-    margin-bottom: 1rem;
-    list-style: none; /* Reset default */
-}
-
-#answer-text li, .markdown-content li {
-    margin-bottom: 0.25rem;
-    position: relative;
-}
-
-/* Custom Bullets */
-#answer-text li::before, .markdown-content li::before {
-    content: "•";
-    color: var(--accent-color);
-    font-weight: bold;
-    display: inline-block;
-    width: 1em;
-    margin-left: -1em;
-}
-
-/* Paragraph spacing */
-#answer-text p, .markdown-content p {
-    margin-bottom: 0.8rem;
 }

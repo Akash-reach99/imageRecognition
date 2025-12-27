@@ -16,27 +16,9 @@ try:
     genai.configure(api_key=API_KEY)
     
     # Use a valid model name
-    model = genai.GenerativeModel('gemini-2.5-flash')
-
-    #model = genai.GenerativeModel('gemini-2.5-flash-lite')
-
-    #model = genai.GenerativeModel('gemma-3-12b-it')
-
-    #model = genai.GenerativeModel('gemini-2.5-pro')
-
-    #model = genai.GenerativeModel('gemini-2.0-flash-exp')
-
-    # The smartest high-limit model (Recommended for detailed analysis)
-    #model = genai.GenerativeModel('gemma-3-27b-it')
-
-    # The fast model (Best for simple tasks or slow internet)
-    #model = genai.GenerativeModel('gemma-3-4b-it')
-
-    # The lightweight model (Extremely fast, less smart)
-    #model = genai.GenerativeModel('gemma-3-1b-it')
+    model = genai.GenerativeModel('gemini-flash-latest')
     
     print("[INFO] Gemini model configured successfully!")
-
 
 except Exception as e:
     print(f"[ERROR] Failed to configure Gemini Pro: {e}")
