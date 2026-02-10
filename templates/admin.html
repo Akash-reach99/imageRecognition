@@ -1,98 +1,161 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body class="page-admin">
     {% include '_nav.html' %}
 
     <main class="container page-wrapper">
-        <hgroup style="margin-bottom: 2rem;">
-            <h1>Admin Dashboard</h1>
+        <hgroup class="admin-header">
+            <h1><i class="fa-solid fa-gauge-high"></i> Admin Dashboard</h1>
             <p>Overview of system performance and user management.</p>
         </hgroup>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash-message-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
 
-        <section class="stats-grid">
-            <article class="stat-card">
-                <i class="fa-solid fa-users"></i>
-                <span class="stat-number">{{ all_users|length }}</span>
-                <span class="stat-label">Total Users</span>
-            </article>
-            
-            <article class="stat-card">
-                <i class="fa-solid fa-images"></i>
-                <span class="stat-number">{{ total_analyses }}</span>
-                <span class="stat-label">Total Analyses</span>
+        <!-- Stats Cards -->
+        <section class="admin-stats-grid">
+            <article class="admin-stat-card stat-users">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <span class="stat-number">{{ all_users|length }}</span>
+                    <span class="stat-label">Total Users</span>
+                </div>
             </article>
 
-            <article class="stat-card">
-                <i class="fa-solid fa-server"></i>
-                <span class="stat-number">Active</span>
-                <span class="stat-label">System Status</span>
+            <article class="admin-stat-card stat-analyses">
+                <div class="stat-icon"><i class="fa-solid fa-images"></i></div>
+                <div class="stat-content">
+                    <span class="stat-number">{{ total_analyses }}</span>
+                    <span class="stat-label">Total Analyses</span>
+                </div>
+            </article>
+
+            <article class="admin-stat-card stat-status">
+                <div class="stat-icon"><i class="fa-solid fa-server"></i></div>
+                <div class="stat-content">
+                    <span class="stat-number">Active</span>
+                    <span class="stat-label">System Status</span>
+                </div>
+            </article>
+
+            <article class="admin-stat-card stat-storage">
+                <div class="stat-icon"><i class="fa-solid fa-database"></i></div>
+                <div class="stat-content">
+                    <span class="stat-number">{{ storage_mb }} MB</span>
+                    <span class="stat-label">Storage Used</span>
+                </div>
             </article>
         </section>
 
-        <article>
-            <div class="results-header">
-                <h3><i class="fa-solid fa-users-gear"></i> User Management</h3>
+        <!-- Recent Activity Feed -->
+        {% if recent_activity %}
+        <article class="admin-activity-card">
+            <h4><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h4>
+            <div class="activity-list">
+                {% for item in recent_activity %}
+                <div class="activity-item">
+                    <img src="/uploads/{{ item.filename }}" alt="thumb" class="activity-thumb"
+                        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%23ccc%22 width=%2240%22 height=%2240%22/></svg>'">
+                    <div class="activity-info">
+                        <strong>{{ item.username }}</strong>
+                        <small>analyzed an image</small>
+                    </div>
+                    <span class="activity-time">{{ item.uploaded_at }}</span>
+                </div>
+                {% endfor %}
             </div>
-            
-            <div style="overflow-x: auto;">
-                <table role="grid">
+        </article>
+        {% endif %}
+
+        <!-- User Management Table -->
+        <article class="admin-table-card">
+            <div class="admin-table-header">
+                <h3><i class="fa-solid fa-users-gear"></i> User Management</h3>
+                <div class="table-controls">
+                    <input type="text" id="userSearch" placeholder="Search users..." class="admin-search">
+                    <div class="bulk-actions hidden" id="bulkActions">
+                        <button type="button" class="btn-bulk toggle" id="bulkToggleBtn">
+                            <i class="fa-solid fa-user-shield"></i> Toggle Role
+                        </button>
+                        <button type="button" class="btn-bulk delete" id="bulkDeleteBtn">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table role="grid" id="usersTable">
                     <thead>
                         <tr>
+                            <th class="checkbox-col">
+                                <input type="checkbox" id="selectAll" title="Select All">
+                            </th>
                             <th>ID</th>
-                            <th>User Details</th>
+                            <th>User</th>
                             <th>Role</th>
                             <th>Joined</th>
-                            <th style="text-align: right;">Actions</th>
+                            <th class="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for user in all_users %}
-                        <tr>
-                            <td>#{{ user.id }}</td>
+                        <tr data-user-id="{{ user.id }}" data-username="{{ user.username|lower }}"
+                            data-email="{{ user.email|lower }}">
+                            <td class="checkbox-col">
+                                {% if user.id != current_user.id %}
+                                <input type="checkbox" class="user-checkbox" value="{{ user.id }}">
+                                {% endif %}
+                            </td>
+                            <td class="id-cell">#{{ user.id }}</td>
                             <td>
-                                <strong>{{ user.username }}</strong><br>
-                                <small class="muted">{{ user.email }}</small>
+                                <div class="user-info">
+                                    <span class="user-avatar">{{ user.username[0]|upper }}</span>
+                                    <div class="user-details">
+                                        <strong>{{ user.username }}</strong>
+                                        <small>{{ user.email }}</small>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 {% if user.is_admin %}
-                                    <span class="tag tag-gemini">Admin</span>
+                                <span class="role-badge admin">Admin</span>
                                 {% else %}
-                                    <span class="tag" style="background-color: var(--pico-muted-color);">User</span>
+                                <span class="role-badge user">User</span>
                                 {% endif %}
                             </td>
-                            <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
-                            <td style="text-align: right;">
+                            <td class="date-cell">{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                            <td class="text-right">
                                 {% if user.id != current_user.id %}
-                                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                        <form method="POST" action="{{ url_for('toggle_admin', user_id=user.id) }}">
-                                            <button type="submit" class="secondary outline small" data-tooltip="Toggle Admin Role">
-                                                <i class="fa-solid fa-user-shield"></i>
-                                            </button>
-                                        </form>
-                                        
-                                        <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" onsubmit="return confirm('Delete this user?');">
-                                            <button type="submit" class="secondary outline small" style="--pico-color: var(--error-color); --pico-border-color: var(--error-color);" data-tooltip="Delete User">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                                <div class="action-buttons">
+                                    <form method="POST" action="{{ url_for('toggle_admin', user_id=user.id) }}">
+                                        <button type="submit" class="action-btn" data-tooltip="Toggle Admin">
+                                            <i class="fa-solid fa-user-shield"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}"
+                                        onsubmit="return confirm('Delete {{ user.username }}?');">
+                                        <button type="submit" class="action-btn delete" data-tooltip="Delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                                 {% else %}
-                                    <small>(You)</small>
+                                <span class="you-badge">You</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -102,11 +165,11 @@
             </div>
         </article>
     </main>
-    
+
     <script>
-        // Theme Logic (Keep as is)
+        // Theme Logic
         const themeSwitcher = document.getElementById('theme-switcher');
-        if (themeSwitcher) { 
+        if (themeSwitcher) {
             themeSwitcher.addEventListener('change', () => {
                 const theme = themeSwitcher.checked ? 'dark' : 'light';
                 document.documentElement.setAttribute('data-theme', theme);
@@ -116,6 +179,80 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
             themeSwitcher.checked = savedTheme === 'dark';
         }
+
+        // User Search
+        const searchInput = document.getElementById('userSearch');
+        const tableRows = document.querySelectorAll('#usersTable tbody tr');
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            tableRows.forEach(row => {
+                const match = row.dataset.username.includes(term) || row.dataset.email.includes(term);
+                row.style.display = match ? '' : 'none';
+            });
+        });
+
+        // Bulk Selection
+        const selectAll = document.getElementById('selectAll');
+        const userCheckboxes = document.querySelectorAll('.user-checkbox');
+        const bulkActions = document.getElementById('bulkActions');
+        const bulkToggleBtn = document.getElementById('bulkToggleBtn');
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+        function updateBulkActions() {
+            const checked = document.querySelectorAll('.user-checkbox:checked');
+            bulkActions.classList.toggle('hidden', checked.length === 0);
+        }
+
+        selectAll.addEventListener('change', () => {
+            userCheckboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkActions();
+        });
+
+        userCheckboxes.forEach(cb => cb.addEventListener('change', updateBulkActions));
+
+        function getSelectedIds() {
+            return Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => parseInt(cb.value));
+        }
+
+        bulkToggleBtn.addEventListener('click', async () => {
+            const ids = getSelectedIds();
+            if (ids.length === 0) return;
+
+            if (!confirm(`Toggle admin role for ${ids.length} user(s)?`)) return;
+
+            const res = await fetch('/admin/bulk_toggle_admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_ids: ids })
+            });
+            const data = await res.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+
+        bulkDeleteBtn.addEventListener('click', async () => {
+            const ids = getSelectedIds();
+            if (ids.length === 0) return;
+
+            if (!confirm(`Delete ${ids.length} user(s)? This cannot be undone!`)) return;
+
+            const res = await fetch('/admin/bulk_delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_ids: ids })
+            });
+            const data = await res.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
     </script>
 </body>
+
 </html>

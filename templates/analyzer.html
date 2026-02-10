@@ -5,69 +5,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Powerd Image Analyzer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    <style>
-        /* Styles for the Crop Modal */
-        .crop-modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .crop-modal-content {
-            background: var(--pico-card-background-color);
-            padding: 1rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .crop-container {
-            max-height: 60vh;
-            overflow: hidden;
-            margin-bottom: 1rem;
-            background: #333;
-            /* Dark bg for easier visibility */
-        }
-
-        .crop-container img {
-            max-width: 100%;
-            display: block;
-        }
-
-        .crop-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Inline styles moved to static/css/pages.css -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body class="page-analyzer">
     {% include '_nav.html' %}
 
     <main class="container page-wrapper">
+        <!-- Progress Stepper -->
+        <div class="progress-stepper" id="progress-stepper">
+            <div class="step active" data-step="1">
+                <div class="step-icon"><i class="fa-solid fa-upload"></i></div>
+                <span class="step-label">Upload</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="2">
+                <div class="step-icon"><i class="fa-solid fa-list-check"></i></div>
+                <span class="step-label">Select</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="3">
+                <div class="step-icon"><i class="fa-solid fa-microchip"></i></div>
+                <span class="step-label">Analyze</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="4">
+                <div class="step-icon"><i class="fa-solid fa-chart-bar"></i></div>
+                <span class="step-label">Results</span>
+            </div>
+        </div>
+
         <article id="upload-article">
             <form id="upload-form">
                 <label for="file" class="drop-zone">
+                    <i class="fa-solid fa-cloud-arrow-up"
+                        style="font-size: 3rem; margin-bottom: 1rem; color: var(--pico-muted-color);"></i>
                     <span class="drop-zone-prompt">Drag & Drop an image or</span>
                     <input type="button" value="Click to Upload" class="secondary"
                         onclick="document.getElementById('file').click();" />
                     <span id="file-input-filename" class="file-input-filename">No file selected</span>
                 </label>
-                <input type="file" id="file" name="file" required class="hidden" accept="image/*">
+                <input type="file" id="file" name="file" class="hidden" accept="image/*">
 
                 <div class="image-preview-container hidden">
                     <img id="image-preview" src="#" alt="Image Preview" />
@@ -85,38 +68,51 @@
                         <label class="task-card">
                             <input type="checkbox" name="tasks" value="gemini_description" checked>
                             <span class="task-card-icon">🧠</span>
-                            <span class="task-card-title">AI Description</span>
-                            <p class="task-card-desc">Gemini AI captions, summaries, and social posts.</p>
+                            <span class="task-card-content">
+                                <span class="task-card-title">AI Description</span>
+                                <span class="task-card-desc">Gemini AI captions, summaries, and social posts.</span>
+                            </span>
                         </label>
                         <label class="task-card">
                             <input type="checkbox" name="tasks" value="metadata" checked>
                             <span class="task-card-icon">ℹ️</span>
-                            <span class="task-card-title">Metadata Extraction</span>
-                            <p class="task-card-desc">Extract EXIF data, GPS coordinates, and file telemetry.</p>
+                            <span class="task-card-content">
+                                <span class="task-card-title">Metadata Extraction</span>
+                                <span class="task-card-desc">Extract EXIF data, GPS coordinates, and file
+                                    telemetry.</span>
+                            </span>
                         </label>
                         <label class="task-card">
                             <input type="checkbox" name="tasks" value="ocr" checked>
                             <span class="task-card-icon">📖</span>
-                            <span class="task-card-title">Extract Text (OCR)</span>
-                            <p class="task-card-desc">Extract any visible text from the image.</p>
+                            <span class="task-card-content">
+                                <span class="task-card-title">Extract Text (OCR)</span>
+                                <span class="task-card-desc">Extract any visible text from the image.</span>
+                            </span>
                         </label>
                         <label class="task-card">
                             <input type="checkbox" name="tasks" value="detection" checked>
                             <span class="task-card-icon">🏷️</span>
-                            <span class="task-card-title">Object Detection</span>
-                            <p class="task-card-desc">YOLOv8 detection for object counting and tags.</p>
+                            <span class="task-card-content">
+                                <span class="task-card-title">Object Detection</span>
+                                <span class="task-card-desc">YOLOv8 detection for object counting and tags.</span>
+                            </span>
                         </label>
                         <label class="task-card">
                             <input type="checkbox" name="tasks" value="imagga_tags">
                             <span class="task-card-icon">📸</span>
-                            <span class="task-card-title">AI Tagging</span>
-                            <p class="task-card-desc">Imagga API for professional-grade tags.</p>
+                            <span class="task-card-content">
+                                <span class="task-card-title">AI Tagging</span>
+                                <span class="task-card-desc">Imagga API for professional-grade tags.</span>
+                            </span>
                         </label>
                         <label class="task-card">
                             <input type="checkbox" name="tasks" value="segmentation" checked>
                             <span class="task-card-icon">🎨</span>
-                            <span class="task-card-title">Editing Toolbox</span>
-                            <p class="task-card-desc">YOLOv8 segmentation for background effects.</p>
+                            <span class="task-card-content">
+                                <span class="task-card-title">Editing Toolbox</span>
+                                <span class="task-card-desc">YOLOv8 segmentation for background effects.</span>
+                            </span>
                         </label>
                     </div>
                 </fieldset>
@@ -131,19 +127,54 @@
                     Image</button>
             </div>
 
+            <!-- Results Summary Card -->
+            <article id="results-summary-card" class="results-summary">
+                <h4><i class="fa-solid fa-clipboard-list"></i> Quick Summary</h4>
+                <div class="summary-grid">
+                    <div class="summary-item" id="summary-ai" title="AI Analysis">
+                        <span class="summary-icon">🧠</span>
+                        <span class="summary-label">AI Description</span>
+                        <span class="summary-status" id="summary-ai-status">—</span>
+                    </div>
+                    <div class="summary-item" id="summary-objects" title="Objects Detected">
+                        <span class="summary-icon">🏷️</span>
+                        <span class="summary-label">Objects</span>
+                        <span class="summary-status" id="summary-objects-status">—</span>
+                    </div>
+                    <div class="summary-item" id="summary-ocr" title="Text Extracted">
+                        <span class="summary-icon">📖</span>
+                        <span class="summary-label">Text (OCR)</span>
+                        <span class="summary-status" id="summary-ocr-status">—</span>
+                    </div>
+                    <div class="summary-item" id="summary-tags" title="Tags Generated">
+                        <span class="summary-icon">🏷️</span>
+                        <span class="summary-label">Tags</span>
+                        <span class="summary-status" id="summary-tags-status">—</span>
+                    </div>
+                    <div class="summary-item" id="summary-edit" title="Edit Ready">
+                        <span class="summary-icon">🎨</span>
+                        <span class="summary-label">Edit Tools</span>
+                        <span class="summary-status" id="summary-edit-status">—</span>
+                    </div>
+                </div>
+            </article>
+
             <div id="results-container">
                 <div class="grid two-col-grid">
                     <article class="result-card-original">
-    <h4>Original Image</h4>
-    
-    <div id="original-image-wrapper" style="position: relative; display: inline-block; width: 100%;">
-        <img id="original-image" src="" alt="Original" class="zoomable" style="display: block; width: 100%;">
-        </div>
+                        <h4>Original Image</h4>
 
-    <button id="manual-crop-trigger" class="outline contrast small" style="width: 100%; margin-top: 0.5rem;">
-        <i class="fa-solid fa-crop-simple"></i> Manual Focus / Labeling
-    </button>
-</article>
+                        <div id="original-image-wrapper"
+                            style="position: relative; display: inline-block; width: 100%;">
+                            <img id="original-image" src="" alt="Original" class="zoomable"
+                                style="display: block; width: 100%;">
+                        </div>
+
+                        <button id="manual-crop-trigger" class="outline contrast small"
+                            style="width: 100%; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-crop-simple"></i> Manual Focus / Labeling
+                        </button>
+                    </article>
 
                     <article id="metadata-result-card" class="result-card-metadata analysis-card">
                         <h4>Metadata</h4>
@@ -171,13 +202,13 @@
                 </article>
 
                 <article id="imagga-results" class="hidden">
-                    <details class="collapsible-section" open>
+                    <details class="collapsible-section">
                         <summary>
                             <hgroup>
                                 <h3>📸 Imagga AI Tags</h3>
                             </hgroup>
                         </summary>
-                        <div id="imagga-tags-container" class="bar-chart-container"></div>
+                        <div id="imagga-tags-container" class="tag-pills-container imagga-pills"></div>
                     </details>
                 </article>
 
@@ -185,78 +216,125 @@
                     <details class="collapsible-section" open>
                         <summary>
                             <hgroup>
-                                <h3>🧠 Gemini AI Analysis</h3>
+                                <h3>📊 Image Analysis Report</h3>
                             </hgroup>
                         </summary>
-                        <div class="details-content-wrapper">
-                            <div class="gemini-output-section">
-                                <h4 class="gemini-section-title">Caption</h4>
-                                <div class="copyable-container">
-                                    <p id="gemini-caption-content"></p>
-                                    <button class="copy-btn" data-clipboard-target="#gemini-caption-content"><i
-                                            class="fa-regular fa-copy"></i></button>
-                                </div>
+
+                        <!-- Top Section: Caption + Summary (always visible) -->
+                        <div class="analysis-header-card">
+                            <div class="caption-box">
+                                <span class="caption-label">✨ Caption</span>
+                                <p id="gemini-caption-content" class="caption-text"></p>
+                                <button class="subtle-copy-btn" onclick="copyText('#gemini-caption-content', this)"
+                                    title="Copy Caption">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
                             </div>
-                            <div class="gemini-output-section">
-                                <details class="collapsible-section">
-                                    <summary>
-                                        <h4 class="gemini-section-title">Summary</h4>
+                            <div class="summary-box">
+                                <span class="summary-label">📄 Summary</span>
+                                <p id="gemini-summary-content" class="summary-text"></p>
+                                <button class="subtle-copy-btn" onclick="copyText('#gemini-summary-content', this)"
+                                    title="Copy Summary">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Collapsible Sections Grid -->
+                        <div class="analysis-sections-grid">
+                            <!-- Key Details -->
+                            <div class="analysis-card">
+                                <details class="inner-details">
+                                    <summary class="card-header">
+                                        <span>🔍 Key Details</span>
                                     </summary>
-                                    <div class="copyable-container">
-                                        <p id="gemini-summary-content"></p>
-                                        <button class="copy-btn" data-clipboard-target="#gemini-summary-content"><i
-                                                class="fa-regular fa-copy"></i></button>
+                                    <div class="card-content">
+                                        <div id="gemini-details-content" class="markdown-content"></div>
+                                        <button class="card-copy-btn" data-clipboard-target="#gemini-details-content"
+                                            title="Copy">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
                                     </div>
                                 </details>
                             </div>
-                            <div class="gemini-output-section">
-                                <details class="collapsible-section" open>
-                                    <summary>
-                                        <h4 class="gemini-section-title">Detailed Description</h4>
+
+                            <!-- Comprehensive Analysis -->
+                            <div class="analysis-card">
+                                <details class="inner-details">
+                                    <summary class="card-header">
+                                        <span>📝 Comprehensive Analysis</span>
                                     </summary>
-                                    <div class="copyable-container">
-                                        <pre id="gemini-detailed-description-content"></pre>
-                                        <button class="copy-btn"
-                                            data-clipboard-target="#gemini-detailed-description-content"><i
-                                                class="fa-regular fa-copy"></i></button>
+                                    <div class="card-content">
+                                        <div id="gemini-comprehensive-content" class="markdown-content"></div>
+                                        <button class="card-copy-btn"
+                                            data-clipboard-target="#gemini-comprehensive-content" title="Copy">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
                                     </div>
                                 </details>
                             </div>
-                            <div id="gemini-sd-prompts-section" class="gemini-output-section hidden">
-                                <details class="collapsible-section">
-                                    <summary>
-                                        <h4 class="gemini-section-title">Stable Diffusion Prompt Suggestions <a
-                                                href="{{ url_for('generate') }}">Generate</a></h4>
+
+                            <!-- Visual Style -->
+                            <div class="analysis-card">
+                                <details class="inner-details">
+                                    <summary class="card-header">
+                                        <span>🎨 Visual Style</span>
                                     </summary>
-                                    <div class="copyable-container">
-                                        <pre id="gemini-sd-prompts-content"></pre>
-                                        <button class="copy-btn" data-clipboard-target="#gemini-sd-prompts-content"><i
-                                                class="fa-regular fa-copy"></i></button>
+                                    <div class="card-content">
+                                        <div id="gemini-style-content" class="markdown-content"></div>
+                                        <button class="card-copy-btn" data-clipboard-target="#gemini-style-content"
+                                            title="Copy">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
                                     </div>
                                 </details>
                             </div>
-                            <div class="gemini-output-section">
-                                <details class="collapsible-section">
-                                    <summary>
-                                        <h4 class="gemini-section-title">Social Media Post</h4>
+
+                            <!-- Social Media Post -->
+                            <div class="analysis-card">
+                                <details class="inner-details">
+                                    <summary class="card-header">
+                                        <span>📱 Social Media Post</span>
                                     </summary>
-                                    <div class="copyable-container">
-                                        <pre id="gemini-social-post-content"></pre>
-                                        <button class="copy-btn" data-clipboard-target="#gemini-social-post-content"><i
-                                                class="fa-regular fa-copy"></i></button>
+                                    <div class="card-content">
+                                        <pre id="gemini-social-post-content" class="social-post-text"></pre>
+                                        <button class="card-copy-btn"
+                                            data-clipboard-target="#gemini-social-post-content" title="Copy">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
                                     </div>
                                 </details>
                             </div>
-                            <div class="gemini-output-section">
-                                <details class="collapsible-section">
-                                    <summary>
-                                        <h4 class="gemini-section-title">Hidden Details</h4>
+
+                            <!-- Fun Fact -->
+                            <div class="analysis-card">
+                                <details class="inner-details">
+                                    <summary class="card-header">
+                                        <span>💡 Did You Notice?</span>
                                     </summary>
-                                    <div class="copyable-container">
-                                        <div id="gemini-hidden-details-content"></div>
-                                        <button class="copy-btn"
-                                            data-clipboard-target="#gemini-hidden-details-content"><i
-                                                class="fa-regular fa-copy"></i></button>
+                                    <div class="card-content">
+                                        <div id="gemini-funfact-content" class="markdown-content"></div>
+                                        <button class="card-copy-btn" data-clipboard-target="#gemini-funfact-content"
+                                            title="Copy">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <!-- Recreation Prompts -->
+                            <div class="analysis-card" id="gemini-sd-prompts-section">
+                                <details class="inner-details">
+                                    <summary class="card-header">
+                                        <span>🎭 Recreation Prompts</span>
+                                        <a href="{{ url_for('generate') }}" class="generate-link">Generate →</a>
+                                    </summary>
+                                    <div class="card-content">
+                                        <pre id="gemini-sd-prompts-content" class="prompts-text"></pre>
+                                        <button class="card-copy-btn" data-clipboard-target="#gemini-sd-prompts-content"
+                                            title="Copy">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
                                     </div>
                                 </details>
                             </div>
@@ -264,8 +342,153 @@
                     </details>
                 </article>
 
+                <!-- AI Visual Analytics Section - CHART.JS REDESIGN -->
+                <article id="ai-analytics-results" class="hidden">
+                    <details class="collapsible-section">
+                        <summary>
+                            <hgroup>
+                                <h3>📊 AI Visual Analytics</h3>
+                            </hgroup>
+                        </summary>
+
+                        <!-- Key Insights Cards -->
+                        <div class="analytics-insights-grid" id="analytics-key-insights">
+                            <div class="insight-card" id="insight-score">
+                                <div class="insight-icon">🎯</div>
+                                <div class="insight-value" id="insight-score-value">--</div>
+                                <div class="insight-label">Quality Score</div>
+                            </div>
+                            <div class="insight-card" id="insight-resolution">
+                                <div class="insight-icon">📸</div>
+                                <div class="insight-value" id="insight-resolution-value">--</div>
+                                <div class="insight-label">Resolution</div>
+                            </div>
+                            <div class="insight-card" id="insight-mood">
+                                <div class="insight-icon" id="mood-emoji-icon">😊</div>
+                                <div class="insight-value" id="insight-mood-value">--</div>
+                                <div class="insight-label">Mood</div>
+                            </div>
+                            <div class="insight-card" id="insight-style">
+                                <div class="insight-icon">🎨</div>
+                                <div class="insight-value" id="insight-style-value">--</div>
+                                <div class="insight-label">Style</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Grid -->
+                        <div class="analytics-charts-grid">
+                            <!-- Content Detection - Doughnut Chart -->
+                            <div class="analytics-chart-card">
+                                <h4 class="analytics-chart-title">
+                                    <i class="fa-solid fa-pie-chart"></i> Content Detection
+                                </h4>
+                                <div class="chart-container">
+                                    <canvas id="content-detection-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Quality Metrics - Horizontal Bar Chart -->
+                            <div class="analytics-chart-card">
+                                <h4 class="analytics-chart-title">
+                                    <i class="fa-solid fa-chart-bar"></i> Quality Metrics
+                                </h4>
+                                <div class="chart-container">
+                                    <canvas id="quality-metrics-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Mood Analysis - Polar Area Chart -->
+                            <div class="analytics-chart-card">
+                                <h4 class="analytics-chart-title">
+                                    <i class="fa-solid fa-heart"></i> Mood Analysis
+                                </h4>
+                                <div class="chart-container">
+                                    <canvas id="mood-analysis-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Technical Metrics - Radar Chart -->
+                            <div class="analytics-chart-card">
+                                <h4 class="analytics-chart-title">
+                                    <i class="fa-solid fa-radar"></i> Technical Analysis
+                                </h4>
+                                <div class="chart-container">
+                                    <canvas id="technical-metrics-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </article>
+
+                <!-- Image Statistics Panel -->
+                <article id="image-stats-results" class="hidden">
+                    <details class="collapsible-section">
+                        <summary>
+                            <hgroup>
+                                <h3>📈 Image Statistics</h3>
+                            </hgroup>
+                        </summary>
+                        <div class="stats-grid">
+                            <!-- Brightness -->
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <i class="fa-solid fa-sun"></i>
+                                    <span>Brightness</span>
+                                </div>
+                                <div class="stat-gauge-container">
+                                    <div class="stat-gauge-bg"></div>
+                                    <div class="stat-gauge-fill" id="stat-brightness-fill"></div>
+                                    <span class="stat-value" id="stat-brightness-value">0%</span>
+                                </div>
+                            </div>
+
+                            <!-- Contrast -->
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <i class="fa-solid fa-circle-half-stroke"></i>
+                                    <span>Contrast</span>
+                                </div>
+                                <div class="stat-gauge-container">
+                                    <div class="stat-gauge-bg"></div>
+                                    <div class="stat-gauge-fill" id="stat-contrast-fill"></div>
+                                    <span class="stat-value" id="stat-contrast-value">0%</span>
+                                </div>
+                            </div>
+
+                            <!-- Saturation -->
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <i class="fa-solid fa-palette"></i>
+                                    <span>Saturation</span>
+                                </div>
+                                <div class="stat-gauge-container">
+                                    <div class="stat-gauge-bg"></div>
+                                    <div class="stat-gauge-fill" id="stat-saturation-fill"></div>
+                                    <span class="stat-value" id="stat-saturation-value">0%</span>
+                                </div>
+                            </div>
+
+                            <!-- Sharpness -->
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <i class="fa-solid fa-eye"></i>
+                                    <span>Sharpness</span>
+                                </div>
+                                <div class="stat-gauge-container">
+                                    <div class="stat-gauge-bg"></div>
+                                    <div class="stat-gauge-fill" id="stat-sharpness-fill"></div>
+                                    <span class="stat-value" id="stat-sharpness-value">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </article>
+
                 <article id="ocr-results" class="hidden analysis-card margin-top-lg">
                     <div class="analysis-body">
+                        <!-- OCR Stats Bar -->
+                        <div id="ocr-stats" class="ocr-stats-bar hidden"></div>
+
                         <div class="grid two-col-grid">
                             <div>
                                 <h4>Annotated Image</h4>
@@ -289,7 +512,7 @@
                 </article>
 
                 <article id="yolo-vision-analysis" class="hidden">
-                    <details class="collapsible-section" open>
+                    <details class="collapsible-section">
                         <summary>
                             <hgroup>
                                 <h3>🎨 YOLOv8 Vision Analysis & Editing</h3>
@@ -311,67 +534,109 @@
                                     <summary>
                                         <h4 class="gemini-section-title">✨ Magic Toolbox</h4>
                                     </summary>
-                                    <div id="seg-loader" class="loader hidden" style="margin: 1rem auto;"></div>
-                                    <div class="grid two-col-grid">
-                                        <div id="seg-controls">
-                                            <fieldset class="toolbox-group"
-                                                style="border: 1px solid var(--pico-muted-border-color); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                                                <legend style="padding: 0 0.5rem; font-weight: 600;">Extraction & Crop
-                                                </legend>
-                                                <div class="seg-button-grid">
-                                                    <button id="seg-btn-remove-bg" class="seg-tool-btn outline"><i
-                                                            class="fa-solid fa-eraser"></i> Remove BG</button>
-                                                    <button id="seg-btn-smart-crop" class="seg-tool-btn outline"><i
-                                                            class="fa-solid fa-crop-simple"></i> Smart Crop</button>
-                                                </div>
-                                            </fieldset>
-                                            <fieldset class="toolbox-group"
-                                                style="border: 1px solid var(--pico-muted-border-color); padding: 1rem; border-radius: 8px;">
-                                                <legend style="padding: 0 0.5rem; font-weight: 600;">Background Effects
-                                                </legend>
-                                                <div class="seg-button-grid">
-                                                    <button id="seg-btn-blur-bg" class="seg-tool-btn outline"
-                                                        onclick="window.selectEffect('blur')"><i
-                                                            class="fa-solid fa-droplet"></i> Blur BG</button>
-                                                    <button id="seg-btn-spotlight" class="seg-tool-btn outline"
-                                                        onclick="window.selectEffect('spotlight')"><i
-                                                            class="fa-solid fa-circle-half-stroke"></i>
-                                                        Spotlight</button>
-                                                </div>
-                                                <div id="effect-settings" class="hidden"
-                                                    style="margin-top: 1rem; background: var(--pico-card-background-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--pico-muted-border-color);">
-                                                    <label for="effect-intensity">Intensity: <span id="intensity-value"
-                                                            style="font-weight: bold; color: var(--pico-primary);">50</span>%</label>
-                                                    <input type="range" id="effect-intensity" name="intensity" min="1"
-                                                        max="100" value="50" style="width: 100%;">
-                                                    <button id="apply-effect-btn" class="contrast small"
-                                                        style="width: 100%; margin-top: 0.5rem;">Apply Effect</button>
-                                                </div>
-                                            </fieldset>
-                                            <h6 style="margin-top: 1.5rem;">Segmentation Plot Preview</h6>
-                                            <img id="seg-plot-preview" src="" alt="Segmentation Plot"
-                                                class="seg-plot-preview-img zoomable">
-                                        </div>
-                                        <div id="seg-results">
-                                            <div id="seg-image-after-placeholder" class="edit-placeholder">
-                                                <p>Select a tool to see the magic...</p>
-                                            </div>
-                                            <div id="comparison-wrapper" class="comparison-slider-wrapper hidden">
-                                                <img id="slider-before" src="" alt="Before" class="slider-img">
-                                                <div class="slider-image-overlay"><img id="slider-after" src=""
-                                                        alt="After" class="slider-img"></div>
-                                                <div class="slider-divider">
-                                                    <div class="slider-handle"><i
-                                                            class="fa-solid fa-arrows-left-right"></i></div>
-                                                </div>
-                                            </div>
-                                            <img id="seg-result-image" src="" alt="Edited Image"
-                                                class="seg-result-image hidden"
+                                    <div id="seg-results" class="preview-area-wrapper">
+                                        <!-- Default State: Original Image -->
+                                        <div id="default-preview-container">
+                                            <img id="seg-default-image" src="" alt="Select a tool to start"
+                                                class="seg-result-image key-image"
                                                 style="width: 100%; border-radius: var(--border-radius-lg);">
-                                            <a id="seg-download-btn" href="#" download="edited_image.png"
-                                                class="button hidden" style="margin-top: 1rem; width: 100%;"><i
-                                                    class="fa-solid fa-download"></i> Download Result</a>
                                         </div>
+
+                                        <!-- Comparison / Result State -->
+                                        <div id="comparison-wrapper" class="comparison-slider-wrapper hidden">
+                                            <img id="slider-before" src="" alt="Before" class="slider-img">
+                                            <div class="slider-image-overlay"><img id="slider-after" src="" alt="After"
+                                                    class="slider-img"></div>
+                                            <div class="slider-divider">
+                                                <div class="slider-handle"><i class="fa-solid fa-arrows-left-right"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <img id="seg-result-image" src="" alt="Edited Image"
+                                            class="seg-result-image hidden"
+                                            style="width: 50%; border-radius: var(--border-radius-lg);border: dashed;">
+
+                                        <a id="seg-download-btn" href="#" download="edited_image.png"
+                                            class="button hidden" style="margin-top: 1rem; width: 100%;"><i
+                                                class="fa-solid fa-download"></i> Download Result</a>
+                                    </div>
+
+                                    <div id="seg-loader" class="loader hidden" style="margin: 1rem auto;"></div>
+
+                                    <!-- 3-Column Tool Grid -->
+                                    <div class="magic-toolbox-grid">
+                                        <!-- Column 1: Extraction & Crop -->
+                                        <fieldset class="toolbox-group premium-card">
+                                            <legend class="premium-legend">Extraction & Crop</legend>
+                                            <div class="seg-button-grid">
+                                                <button id="seg-btn-remove-bg" class="seg-tool-btn outline"><i
+                                                        class="fa-solid fa-eraser"></i> Remove BG</button>
+                                                <button id="seg-btn-smart-crop" class="seg-tool-btn outline"><i
+                                                        class="fa-solid fa-crop-simple"></i> Smart Crop</button>
+                                            </div>
+                                        </fieldset>
+
+                                        <!-- Column 2: Background Effects -->
+                                        <fieldset class="toolbox-group premium-card">
+                                            <legend class="premium-legend">Background Effects</legend>
+                                            <div class="seg-button-grid">
+                                                <button id="seg-btn-blur-bg" class="seg-tool-btn outline"
+                                                    onclick="window.selectEffect('blur')"><i
+                                                        class="fa-solid fa-droplet"></i> Blur BG</button>
+                                                <button id="seg-btn-spotlight" class="seg-tool-btn outline"
+                                                    onclick="window.selectEffect('spotlight')"><i
+                                                        class="fa-solid fa-circle-half-stroke"></i>
+                                                    Spotlight</button>
+                                            </div>
+                                            <div id="effect-settings" class="hidden"
+                                                style="margin-top: 1rem; background: var(--pico-card-background-color); padding: 1rem; border-radius: 8px; border: 1px solid var(--pico-muted-border-color);">
+                                                <label for="effect-intensity">Intensity: <span id="intensity-value"
+                                                        style="font-weight: bold; color: var(--pico-primary);">50</span>%</label>
+                                                <input type="range" id="effect-intensity" name="intensity" min="1"
+                                                    max="100" value="50" style="width: 100%;">
+                                                <button id="apply-effect-btn" class="contrast small"
+                                                    style="width: 100%; margin-top: 0.5rem;">Apply Effect</button>
+                                            </div>
+                                        </fieldset>
+
+                                        <!-- Column 3: Quick Filters -->
+                                        <fieldset class="toolbox-group premium-card">
+                                            <legend class="premium-legend">Quick Filters</legend>
+                                            <div class="seg-button-grid">
+                                                <button class="seg-tool-btn outline filter-btn" data-filter="bw"><i
+                                                        class="fa-solid fa-camera"></i> B&W</button>
+                                                <button class="seg-tool-btn outline filter-btn" data-filter="sepia"><i
+                                                        class="fa-solid fa-scroll"></i>
+                                                    Sepia</button>
+                                                <button class="seg-tool-btn outline filter-btn" data-filter="vintage"><i
+                                                        class="fa-solid fa-compact-disc"></i>
+                                                    Vintage</button>
+                                                <button class="seg-tool-btn outline filter-btn" data-filter="cool"><i
+                                                        class="fa-solid fa-snowflake"></i>
+                                                    Cool</button>
+                                                <button class="seg-tool-btn outline filter-btn" data-filter="warm"><i
+                                                        class="fa-solid fa-sun"></i> Warm</button>
+                                                <button class="seg-tool-btn outline filter-btn" data-filter="enhance"><i
+                                                        class="fa-solid fa-wand-magic-sparkles"></i>
+                                                    Enhance</button>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <!-- Segmentation Plot (Mask Toggle) - Bottom -->
+                                    <div
+                                        style="margin-top: 1.5rem; border-top: 1px dashed var(--pico-muted-border-color); padding-top: 1rem;">
+                                        <details>
+                                            <summary
+                                                style="font-size: 0.9em; color: var(--pico-muted-color); cursor: pointer;">
+                                                <i class="fa-solid fa-layer-group"></i> See internal segmentation mask
+                                            </summary>
+                                            <div style="margin-top: 1rem; text-align: center;">
+                                                <img id="seg-plot-preview" src="" alt="Segmentation Plot"
+                                                    class="seg-plot-preview-img zoomable"
+                                                    style="width:270px; border-radius: 8px;">
+                                            </div>
+                                        </details>
                                     </div>
                                 </details>
                             </div>
@@ -419,27 +684,28 @@
     </div>
 
     <div id="crop-modal-backdrop" class="crop-modal-backdrop hidden">
-    <div class="crop-modal-content">
-        <h4 style="margin-bottom: 1rem;">Manual Focus & Labeling</h4>
-        <div class="crop-container">
-            <img id="crop-modal-img" src="" alt="Image to Crop">
-        </div>
-        <p style="font-size: 0.9em; margin-bottom: 1rem;" class="muted">
-            Select the object area. Then choose to <strong>Analyze</strong> it (AI) or just <strong>Label</strong> it (Manual).
-        </p>
-        <div class="crop-actions">
-            <button type="button" id="crop-cancel-btn" class="secondary outline">Cancel</button>
-            
-            <button type="button" id="crop-label-btn" class="outline" style="margin-right: auto;">
-                <i class="fa-solid fa-tag"></i> Label Selection
-            </button>
-            
-            <button type="button" id="crop-apply-btn">
-                <i class="fa-solid fa-microchip"></i> Analyze Selection
-            </button>
+        <div class="crop-modal-content">
+            <h4 style="margin-bottom: 1rem;">Manual Focus & Labeling</h4>
+            <div class="crop-container">
+                <img id="crop-modal-img" src="" alt="Image to Crop">
+            </div>
+            <p style="font-size: 0.9em; margin-bottom: 1rem;" class="muted">
+                Select the object area. Then choose to <strong>Analyze</strong> it (AI) or just <strong>Label</strong>
+                it (Manual).
+            </p>
+            <div class="crop-actions">
+                <button type="button" id="crop-cancel-btn" class="secondary outline">Cancel</button>
+
+                <button type="button" id="crop-label-btn" class="outline" style="margin-right: auto;">
+                    <i class="fa-solid fa-tag"></i> Label Selection
+                </button>
+
+                <button type="button" id="crop-apply-btn">
+                    <i class="fa-solid fa-microchip"></i> Analyze Selection
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>

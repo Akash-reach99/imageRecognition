@@ -2,17 +2,52 @@
 import requests
 import os
 from requests.auth import HTTPBasicAuth
-from dotenv import load_dotenv # <--- Add this
+from dotenv import load_dotenv
+from PIL import Image
+from io import BytesIO
 
-load_dotenv() # <--- Load variables
+load_dotenv()
 
 # 🔑 Replace with your Imagga API credentials
 API_KEY = os.getenv('IMAGGA_API_KEY')
 API_SECRET = os.getenv('IMAGGA_API_SECRET')
 
-# --- THIS IS THE CORRECTED LINE ---
 UPLOAD_URL = "https://api.imagga.com/v2/uploads"
 TAGGING_URL = "https://api.imagga.com/v2/tags"
+
+
+def _prepare_image(image_path: str, max_dim: int = 1536, quality: int = 85) -> bytes:
+    """
+    Preprocesses image for optimal API performance.
+    - Resizes to max_dim if larger
+    - Compresses with JPEG quality
+    - Returns bytes for upload
+    """
+    img = Image.open(image_path)
+    original_size = img.size
+    
+    # Convert to RGB (ensures JPEG compatibility)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+    
+    # Resize if needed
+    width, height = img.size
+    if max(width, height) > max_dim:
+        if width > height:
+            new_width = max_dim
+            new_height = int(height * (max_dim / width))
+        else:
+            new_height = max_dim
+            new_width = int(width * (max_dim / height))
+        img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        print(f"[DEBUG] Imagga: Resized image from {original_size[0]}x{original_size[1]} to {new_width}x{new_height}")
+    
+    # Compress to JPEG bytes
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG', quality=quality, optimize=True)
+    buffer.seek(0)
+    return buffer
+
 
 def get_imagga_tags(image_path: str, limit=3) -> list:
     """
@@ -23,15 +58,15 @@ def get_imagga_tags(image_path: str, limit=3) -> list:
         return []
 
     try:
-        # Step 1: Upload image
-        with open(image_path, "rb") as image_file:
-            response = requests.post(
-                UPLOAD_URL,
-                auth=HTTPBasicAuth(API_KEY, API_SECRET),
-                files={"image": image_file}
-            )
-            response.raise_for_status() # Raise an error for bad responses
-            upload_result = response.json()
+        # Step 1: Preprocess and upload image
+        image_buffer = _prepare_image(image_path)
+        response = requests.post(
+            UPLOAD_URL,
+            auth=HTTPBasicAuth(API_KEY, API_SECRET),
+            files={"image": ("image.jpg", image_buffer, "image/jpeg")}
+        )
+        response.raise_for_status()
+        upload_result = response.json()
 
         # Check if upload worked
         if "result" not in upload_result or "upload_id" not in upload_result["result"]:
@@ -44,7 +79,7 @@ def get_imagga_tags(image_path: str, limit=3) -> list:
         # Step 2: Get tags using the upload_id
         params = {
             "image_upload_id": upload_id,
-            "limit": limit  # <-- This uses your "top 5" request
+            "limit": limit
         }
         response = requests.get(TAGGING_URL, auth=HTTPBasicAuth(API_KEY, API_SECRET), params=params)
         response.raise_for_status()

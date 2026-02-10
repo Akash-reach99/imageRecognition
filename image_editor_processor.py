@@ -1,7 +1,7 @@
 # project p8/image_editor_processor.py
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance
 from rembg import remove  # Requires: pip install rembg
 
 def _get_mask_and_image(original_path, mask_path=None):
@@ -141,3 +141,100 @@ def apply_smart_crop(original_path: str, mask_path: str = None) -> Image.Image:
     y_max = min(transparent_pil.height, y_max + padding)
 
     return transparent_pil.crop((x_min, y_min, x_max, y_max))
+
+def apply_filter(original_path: str, filter_type: str) -> Image.Image:
+    """
+    Applies color filters to the entire image.
+    """
+    img = cv2.imread(original_path)
+    if img is None:
+        raise Exception(f"Failed to read image: {original_path}")
+    
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+    if filter_type == 'bw':
+        # Grayscale
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        return Image.fromarray(cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB))
+    
+    elif filter_type == 'sepia':
+        # Standard Sepia Matrix
+        img_float = np.array(img, dtype=np.float64)
+        img_sepia = np.zeros_like(img_float)
+        # R = (R * .393) + (G * .769) + (B * .189)
+        # G = (R * .349) + (G * .686) + (B * .168)
+        # B = (R * .272) + (G * .534) + (B * .131)
+        matrix = [[0.393, 0.769, 0.189],
+                  [0.349, 0.686, 0.168],
+                  [0.272, 0.534, 0.131]]
+        
+        # Apply matrix (simplified vector processing)
+        img_sepia = cv2.transform(img_float, np.array(matrix))
+        
+        # Clip values to 255
+        img_sepia = np.clip(img_sepia, 0, 255)
+        return Image.fromarray(np.array(img_sepia, dtype=np.uint8))
+    
+    elif filter_type == 'vintage':
+        # Fade + Yellow tint + Noise
+        # 1. Reduce contrast (Fade)
+        img_float = img.astype(float)
+        img_float = img_float * 0.8 + 20 # Lift blacks
+        
+        # 2. Add Warmth (Yellow-ish)
+        # B channel down, R channel up
+        img_float[:,:,2] -= 20 # Blue down makes it yellow
+        img_float[:,:,0] += 20 # Red up
+        
+        # 3. Vignette (Darker corners)
+        rows, cols = img.shape[:2]
+        # Create Gaussian kernel
+        X_kernel = cv2.getGaussianKernel(cols, cols/2)
+        Y_kernel = cv2.getGaussianKernel(rows, rows/2)
+        kernel = Y_kernel * X_kernel.T
+        mask = kernel / kernel.max()
+        
+        # Apply vignette
+        img_vignette = img_float * mask[:, :, np.newaxis]
+        
+        np.clip(img_vignette, 0, 255, out=img_vignette)
+        return Image.fromarray(img_vignette.astype(np.uint8))
+        
+    elif filter_type == 'cool':
+        # Increase Blue, Decrease Red
+        img_float = img.astype(float)
+        img_float[:,:,0] -= 10 # Red down
+        img_float[:,:,2] += 20 # Blue up
+        np.clip(img_float, 0, 255, out=img_float)
+        return Image.fromarray(img_float.astype(np.uint8))
+        
+    elif filter_type == 'warm':
+        # Increase Red, Decrease Blue
+        img_float = img.astype(float)
+        img_float[:,:,0] += 20 # Red up
+        img_float[:,:,2] -= 20 # Blue down
+        np.clip(img_float, 0, 255, out=img_float)
+        return Image.fromarray(img_float.astype(np.uint8))
+        
+    elif filter_type == 'enhance':
+        # PIL ImageEnhance for better general enhancement
+        # Convert numpy->PIL
+        pil_img = Image.fromarray(img)
+        
+        # 1. Enhance Contrast
+        enhancer = ImageEnhance.Contrast(pil_img)
+        pil_img = enhancer.enhance(1.2)
+        
+        # 2. Enhance Color (Saturation)
+        enhancer = ImageEnhance.Color(pil_img)
+        pil_img = enhancer.enhance(1.2)
+        
+        # 3. Enhance Sharpness
+        enhancer = ImageEnhance.Sharpness(pil_img)
+        pil_img = enhancer.enhance(1.3)
+        
+        return pil_img
+    
+    else:
+        # Default return original
+        return Image.fromarray(img)

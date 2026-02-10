@@ -1,0 +1,46 @@
+/* ===========================================
+   VARIABLES.CSS - CSS Custom Properties
+   =========================================== */
+
+/* --- 2. Root Variables --- */
+:root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    --pico-primary: #0d6efd;
+    --pico-primary-hover: #0b5ed7;
+    --pico-primary-focus: rgba(13, 110, 253, 0.25);
+    --pico-primary-inverse: #FFF;
+    --accent-color: #ff7f0e;
+    --accent-hover-color: #cc650b;
+    --pico-font-size: 115%;
+    --pico-line-height: 1.75;
+    --pico-color: #1a1a1a;
+    --pico-background-color: #ffffff;
+    --pico-card-background-color: #ffffff;
+    --pico-card-border-color: #dee2e6;
+    --pico-muted-color: #495057;
+    --pico-muted-border-color: #ced4da;
+    --success-color: #198754;
+    --error-color: #dc3545;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --border-radius-lg: 0.5rem;
+    --transition-fast: all 0.2s ease-in-out;
+}
+
+[data-theme="dark"] {
+    --pico-primary: #3b82f6;
+    --pico-primary-hover: #60a5fa;
+    --pico-primary-focus: rgba(59, 130, 246, 0.25);
+    --accent-color: #fb923c;
+    --accent-hover-color: #fdba74;
+    --pico-color: #e5e7eb;
+    --pico-background-color: #111827;
+    --pico-card-background-color: #1f2937;
+    --pico-card-border-color: #4b5563;
+    --pico-muted-color: #9ca3af;
+    --pico-muted-border-color: #6b7280;
+    --success-color: #22c55e;
+    --error-color: #ef4444;
+}

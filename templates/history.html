@@ -1,159 +1,333 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis History</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body class="page-history">
     {% include '_nav.html' %}
     <main class="container page-wrapper">
 
-        <div class="search-form-container">
+        <!-- History Header with Stats -->
+        <header class="history-header">
+            <div class="history-title-section">
+                <h1><i class="fa-solid fa-clock-rotate-left"></i> Analysis History</h1>
+                <p class="history-subtitle">View and manage your analyzed and generated images</p>
+            </div>
+            <div class="history-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-count">{{ records|length if records else 0 }}</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="analyzed-count">0</span>
+                    <span class="stat-label">Analyzed</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="generated-count">0</span>
+                    <span class="stat-label">Generated</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search and Filters -->
+        <div class="history-controls">
             <form method="GET" action="{{ url_for('history') }}" class="search-form" role="search">
-                <input type="search" id="search" name="search" value="{{ search_query|default('') }}" placeholder="Search by tags (e.g., car) or 'AI Generated'..." >
+                <div class="search-input-wrapper">
+
+                    <input type="search" id="search" name="search" value="{{ search_query|default('') }}"
+                        placeholder="Search by tags, filename, or caption..." style="width: 379px;
+    position: relative;
+    top: -10px;">
+                </div>
                 <button type="submit">Search</button>
+                {% if search_query %}
+                <a href="{{ url_for('history') }}" class="secondary outline">Clear</a>
+                {% endif %}
             </form>
-            {% if search_query %}
-                <a href="{{ url_for('history') }}" class="secondary outline">Clear Search</a>
-            {% endif %}
+
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="analyzed">📊 Analyzed</button>
+                <button class="filter-btn" data-filter="generated">✨ Generated</button>
+
+                <div class="selection-controls" style="margin-left: auto; display: flex; gap: 0.5rem;">
+                    <button id="toggle-select-mode" class="secondary outline">
+                        <i class="fa-regular fa-square-check"></i> Select
+                    </button>
+                    <button id="delete-selected-btn" class="secondary outline hidden"
+                        style="--pico-color: var(--error-color); --pico-border-color: var(--error-color);">
+                        <i class="fa-solid fa-trash-can"></i> Delete (<span id="selected-count">0</span>)
+                    </button>
+                    <button id="clear-all-history-btn" class="secondary outline"
+                        style="--pico-color: var(--error-color); --pico-border-color: var(--error-color);">
+                        <i class="fa-solid fa-trash-can"></i> Clear All
+                    </button>
+                </div>
+            </div>
         </div>
 
         {% if records %}
-            <div class="history-gallery-grid">
-                {% for record in records %}
-                
-                {% set is_generated = 'generation' in record.predictions_json.get('source', '') %}
-                {% set folder = 'generated' if is_generated else 'uploads' %}
-                {% set image_url = url_for('generated_file' if is_generated else 'uploaded_file', filename=record.filename) %}
-                
-                <div class="history-gallery-card"
-                     data-id="{{ record.id }}"
-                     data-filename="{{ record.filename }}"
-                     data-image-url="{{ image_url }}"
-                     data-timestamp="{{ record.upload_timestamp.strftime('%Y-%m-%d %H:%M:%S') if record.upload_timestamp else 'N/A' }}"
-                     data-tags="{{ record.tags|map(attribute='tag_name')|join(',') }}"
-                     data-predictions="{{ record.predictions_str|e }}"
-                     data-is-generated="{{ 'true' if is_generated else 'false' }}">
+        <div class="history-gallery-grid">
+            {% for record in records %}
 
-                    <img src="{{ image_url }}" alt="History image {{ record.filename }}">
-                <div class="card-overlay">
-                        <span class="card-title">
-                            {% if record.predictions_json.gemini and record.predictions_json.gemini.caption %}
-                                {{ record.predictions_json.gemini.caption }}
-                            {% else %}
-                                {{ record.filename[:20] }}...
-                            {% endif %}
+            {% set is_generated = 'generation' in record.predictions_json.get('source', '') %}
+            {% set folder = 'generated' if is_generated else 'uploads' %}
+            {% set image_url = url_for('generated_file' if is_generated else 'uploaded_file', filename=record.filename)
+            %}
+
+            <div class="history-gallery-card" data-id="{{ record.id }}" data-filename="{{ record.filename }}"
+                data-image-url="{{ image_url }}"
+                data-timestamp="{{ record.upload_timestamp.strftime('%Y-%m-%d %H:%M:%S') if record.upload_timestamp else 'N/A' }}"
+                data-tags="{{ record.tags|map(attribute='tag_name')|join(',') }}"
+                data-predictions="{{ record.predictions_str|e }}"
+                data-is-generated="{{ 'true' if is_generated else 'false' }}"
+                data-filter-type="{{ 'generated' if is_generated else 'analyzed' }}">
+
+                <div class="card-image-wrapper">
+                    <input type="checkbox" class="card-select-checkbox hidden" value="{{ record.id }}"
+                        onclick="event.stopPropagation()">
+                    <img src="{{ image_url }}" alt="{{ record.filename }}" loading="lazy">
+                    <span class="card-badge {{ 'badge-generated' if is_generated else 'badge-analyzed' }}">
+                        {{ '✨ Generated' if is_generated else '📊 Analyzed' }}
+                    </span>
+                </div>
+
+                <div class="card-info">
+                    <h4 class="card-title">
+                        {% if record.predictions_json.gemini and record.predictions_json.gemini.caption %}
+                        {{ record.predictions_json.gemini.caption[:50] }}{% if
+                        record.predictions_json.gemini.caption|length > 50 %}...{% endif %}
+                        {% elif record.predictions_json.prompt %}
+                        {{ record.predictions_json.prompt[:50] }}{% if record.predictions_json.prompt|length > 50
+                        %}...{% endif %}
+                        {% else %}
+                        {{ record.filename[:30] }}{% if record.filename|length > 30 %}...{% endif %}
+                        {% endif %}
+                    </h4>
+
+                    <!-- Task Indicators Row -->
+                    {% set tasks_run = record.predictions_json.get('tasks_run', []) %}
+                    {% if tasks_run or record.predictions_json.gemini or record.predictions_json.ocr or
+                    record.predictions_json.yolo %}
+                    <div class="card-task-indicators">
+                        {% if 'gemini_description' in tasks_run or record.predictions_json.gemini %}
+                        <span class="task-indicator" title="AI Analysis">🧠</span>
+                        {% endif %}
+                        {% if 'ocr' in tasks_run or record.predictions_json.ocr %}
+                        <span class="task-indicator" title="OCR Text Detection">📖</span>
+                        {% endif %}
+                        {% if 'detection' in tasks_run or (record.predictions_json.yolo and
+                        record.predictions_json.yolo.detection) %}
+                        <span class="task-indicator" title="Object Detection">🏷️</span>
+                        {% endif %}
+                        {% if 'segmentation' in tasks_run or (record.predictions_json.yolo and
+                        record.predictions_json.yolo.segmentation) %}
+                        <span class="task-indicator" title="Segmentation">🎨</span>
+                        {% endif %}
+                        {% if 'metadata' in tasks_run %}
+                        <span class="task-indicator" title="Metadata">ℹ️</span>
+                        {% endif %}
+                        {% if 'imagga_tags' in tasks_run or record.predictions_json.imagga %}
+                        <span class="task-indicator" title="Imagga Tags">📸</span>
+                        {% endif %}
+                        {% if record.predictions_json.ai_analytics %}
+                        <span class="task-indicator" title="AI Analytics">📊</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="card-meta">
+                        <span class="card-date">
+                            <i class="fa-regular fa-clock"></i>
+                            {{ record.upload_timestamp.strftime('%b %d, %Y') if record.upload_timestamp else 'N/A' }}
                         </span>
+                        {% if record.tags %}
+                        <div class="card-tags-preview">
+                            {% for tag in record.tags[:3] %}
+                            <span class="mini-tag">{{ tag.tag_name }}</span>
+                            {% endfor %}
+                            {% if record.tags|length > 3 %}
+                            <span class="mini-tag more-tag">+{{ record.tags|length - 3 }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
+        </div>
         {% else %}
-            <article>
-                <h3>{% if search_query %}No History Found for "{{ search_query }}"{% else %}No History Found{% endif %}</h3>
-                <p>You haven't analyzed any images yet. Go back to the main page to get started!</p>
-            </article>
+        <article>
+            <h3>{% if search_query %}No History Found for "{{ search_query }}"{% else %}No History Found{% endif %}</h3>
+            <p>You haven't analyzed any images yet. Go back to the main page to get started!</p>
+        </article>
         {% endif %}
     </main>
 
     <div id="history-modal-backdrop" class="modal-backdrop-class hidden">
-        <article id="history-modal-content" class="modal-content-class">
+        <article id="history-modal-content" class="modal-content-class history-modal-tabs">
             <a href="#" id="history-modal-close" class="modal-close-btn" aria-label="Close">×</a>
-            <div class="modal-body-grid">
-                <div class="modal-image-column">
-                    <img id="modal-image" src="" alt="Analyzed Image" class="zoomable">
-                    <div id="modal-tags-container" class="tag-container"></div>
+
+            <!-- Modal Header with Image and Quick Info -->
+            <div class="modal-header-section">
+                <div class="modal-image-container">
+                    <img id="modal-image" src="" alt="Image" class="zoomable">
+                    <div class="modal-image-overlay">
+                        <span id="modal-type-badge" class="modal-type-badge"></span>
+                    </div>
+                </div>
+                <div class="modal-info-sidebar">
                     <small id="modal-timestamp" class="modal-timestamp-class"></small>
-                    
-                    <button id="modal-delete-btn" class="secondary outline" style="--pico-color: var(--error-color); --pico-border-color: var(--error-color); width: 100%; margin-top: 1rem;">
-                        <i class="fa-regular fa-trash-can"></i> Delete this Entry
-                    </button>
+                    <div id="modal-tags-container" class="tag-container"></div>
+
+                    <!-- NEW: Add Custom Tag Section -->
+                    <div class="add-tag-section">
+                        <label class="block-label">Add Custom Tag</label>
+                        <div class="add-tag-input-group">
+                            <input type="text" id="custom-tag-input" placeholder="Enter tag..." maxlength="30">
+                            <button id="add-custom-tag-btn" class="small" title="Add Tag">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
-                <div class="modal-details-column">
-                    
-                    <div id="modal-metadata-section" class="hidden">
-                        <details class="collapsible-section" open>
-                            <summary><h3><i class="fa-solid fa-file-lines"></i> Metadata</h3></summary>
-                            <div id="modal-metadata-content" class="details-content-wrapper" style="padding-left: 1.5rem; border-left: 2px solid var(--pico-card-border-color);"></div>
-                            <div id="modal-map-container" class="hidden" style="margin-top: 1rem; padding-left: 1.5rem;"></div>
+
+                    <!-- Action Buttons -->
+                    <div class="modal-actions">
+                        <button id="modal-download-btn" class="outline modal-action-btn">
+                            <i class="fa-solid fa-file-pdf"></i> PDF
+                        </button>
+                        <button id="modal-delete-btn" class="secondary outline modal-action-btn delete-btn">
+                            <i class="fa-regular fa-trash-can"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="modal-tabs-nav">
+                <button class="modal-tab-btn active" data-tab="overview">
+                    <i class="fa-solid fa-info-circle"></i> Overview
+                </button>
+                <button class="modal-tab-btn" data-tab="analysis">
+                    <i class="fa-solid fa-brain"></i> Analysis
+                </button>
+                <button class="modal-tab-btn" data-tab="qa" id="qa-tab-btn">
+                    <i class="fa-solid fa-comments"></i> Q&A
+                    <span id="qa-count-badge" class="count-badge hidden"></span>
+                </button>
+            </div>
+
+            <!-- Tab Content Area -->
+            <div class="modal-tab-content">
+
+                <!-- Tab: Overview -->
+                <div class="modal-tab-pane active" id="tab-overview">
+                    <!-- Generation Info (for generated images) -->
+                    <div id="modal-generation-info-section" class="tab-section hidden">
+                        <h4 class="tab-section-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Generation Info
+                        </h4>
+                        <div class="info-box-compact">
+                            <strong>Prompt Used:</strong>
+                            <pre id="modal-generation-prompt" class="prompt-display"></pre>
+                        </div>
+                    </div>
+
+                    <!-- AI Caption -->
+                    <div id="modal-caption-section" class="tab-section hidden">
+                        <h4 class="tab-section-title"><i class="fa-solid fa-quote-left"></i> Caption</h4>
+                        <p id="modal-gemini-caption" class="caption-display"></p>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div id="modal-metadata-section" class="tab-section hidden">
+                        <h4 class="tab-section-title"><i class="fa-solid fa-file-lines"></i> Metadata</h4>
+                        <div id="modal-metadata-content" class="metadata-grid"></div>
+                        <div id="modal-map-container" class="hidden map-embed"></div>
+                    </div>
+
+                    <!-- AI Tags -->
+                    <div id="modal-imagga-section" class="tab-section hidden">
+                        <h4 class="tab-section-title"><i class="fa-solid fa-tags"></i> AI Tags</h4>
+                        <div id="modal-imagga-tags-container" class="tag-container imagga-tags"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Analysis -->
+                <div class="modal-tab-pane hidden" id="tab-analysis">
+                    <!-- AI Analysis Summary -->
+                    <div id="modal-gemini-section" class="tab-section hidden">
+                        <h4 class="tab-section-title"><i class="fa-solid fa-brain"></i> AI Analysis</h4>
+                        <div id="modal-gemini-summary" class="analysis-content markdown-content"></div>
+
+                        <details class="analysis-details">
+                            <summary><i class="fa-solid fa-file-lines"></i> Detailed Description</summary>
+                            <div id="modal-gemini-detailed" class="markdown-content"></div>
                         </details>
+
+                        <div id="modal-sd-prompts-section" class="hidden">
+                            <details class="analysis-details">
+                                <summary><i class="fa-solid fa-lightbulb"></i> Prompt Suggestions</summary>
+                                <pre id="modal-sd-prompts-content" class="prompt-display"></pre>
+                            </details>
+                        </div>
+
+                        <div id="modal-gemini-social-details" class="hidden">
+                            <details class="analysis-details">
+                                <summary><i class="fa-solid fa-share-nodes"></i> Social Post</summary>
+                                <pre id="modal-gemini-social" class="prompt-display"></pre>
+                            </details>
+                        </div>
                     </div>
-                    <div id="modal-generation-info-section" class="hidden">
-                        <details class="collapsible-section" open>
-                            <summary><h3><i class="fa-solid fa-wand-magic-sparkles"></i> Generation Info</h3></summary>
-                            <div class="details-content-wrapper" style="padding-left: 1.5rem; border-left: 2px solid var(--pico-card-border-color);">
-                                <h4 class="gemini-section-title" style="margin-top: 0.5rem;">Prompt</h4>
-                                <pre id="modal-generation-prompt" style="font-size: 0.9em;"></pre>
+
+                    <!-- OCR Section -->
+                    <div id="modal-ocr-section" class="tab-section hidden">
+                        <h4 class="tab-section-title"><i class="fa-solid fa-font"></i> Text Detection (OCR)</h4>
+                        <div id="modal-ocr-stats" class="ocr-stats-bar hidden"></div>
+                        <div class="ocr-results-grid">
+                            <div class="ocr-image-col">
+                                <label class="block-label">Annotated Image</label>
+                                <img id="modal-ocr-annotated-image" src="" alt="OCR Annotated"
+                                    class="zoomable ocr-image">
                             </div>
-                        </details>
-                    </div>
-                    <div id="modal-gemini-section" class="hidden">
-                        <h3>🧠 Gemini AI Analysis</h3>
-
-                        <div class="gemini-output-section">
-                            <h4 class="gemini-section-title">Caption</h4>
-                            <p id="modal-gemini-caption" class="gemini-caption-class"></p>
+                            <div class="ocr-text-col">
+                                <label class="block-label">Extracted Text</label>
+                                <pre id="modal-ocr-text" class="ocr-text-display"></pre>
+                                <div id="modal-ocr-detections" class="ocr-list-container hidden"></div>
                             </div>
-
-                        <div class="gemini-output-section">
-                            <details class="collapsible-section">
-                                <summary><h4 class="gemini-section-title">Summary</h4></summary>
-                                <p id="modal-gemini-summary"></p>
-                                </details>
-                        </div>
-
-                        <div class="gemini-output-section">
-                            <details class="collapsible-section" open>
-                                <summary><h4 class="gemini-section-title">Detailed Description</h4></summary>
-                                <pre id="modal-gemini-detailed"></pre>
-                                </details>
-                        </div>
-
-                        <div id="modal-sd-prompts-section" class="gemini-output-section hidden">
-                             <details class="collapsible-section">
-                                <summary><h4 class="gemini-section-title">Stable Diffusion Prompt Suggestions</h4></summary>
-                                <pre id="modal-sd-prompts-content"></pre>
-                                </details>
-                        </div>
-
-                        <div id="modal-gemini-social-details" class="gemini-output-section hidden">
-                            <details class="collapsible-section">
-                                <summary><h4 class="gemini-section-title">Social Post</h4></summary>
-                                <pre id="modal-gemini-social"></pre>
-                                </details>
                         </div>
                     </div>
 
-                    <div id="modal-ocr-section" class="hidden">
-                        <details class="collapsible-section" open>
-                             <summary><h3>📖 Smart OCR (Text Detection)</h3></summary>
-                             <div class="grid two-col-grid">
-                                <article>
-                                    <h4 class="gemini-section-title">Annotated Image</h4>
-                                    <img id="modal-ocr-annotated-image" src="" alt="OCR Annotated Image" class="zoomable">
-                                </article>
-                                <article>
-                                    <h4 class="gemini-section-title">Extracted Text</h4>
-                                    <pre id="modal-ocr-text"></pre>
-                                </article>
-                             </div>
-                        </details>
+                    <!-- YOLO Vision Analysis -->
+                    <div id="modal-yolo-section" class="tab-section hidden">
+                        <h4 class="tab-section-title"><i class="fa-solid fa-eye"></i> Vision Analysis (YOLO)</h4>
+                        <div id="modal-yolo-grid" class="yolo-card-grid"></div>
                     </div>
-                    <div id="modal-yolo-section" class="hidden">
-                         <details class="collapsible-section">
-                            <summary><h3>🎨 YOLOv8 Vision Analysis</h3></summary>
-                            <div id="modal-yolo-grid" class="yolo-card-grid"></div>
-                        </details>
+
+                    <!-- Empty state for Analysis tab -->
+                    <div id="analysis-empty-state" class="empty-state hidden">
+                        <i class="fa-solid fa-microscope"></i>
+                        <p>No detailed analysis available for this image.</p>
                     </div>
-                    
-                    <div id="modal-imagga-section" class="hidden">
-                        <details class="collapsible-section">
-                             <summary><h3>📸 AI Tags</h3></summary>
-                             <div id="modal-imagga-tags-container" class="tag-container"></div>
-                        </details>
+                </div>
+
+                <!-- Tab: Q&A -->
+                <div class="modal-tab-pane hidden" id="tab-qa">
+                    <div id="modal-qa-section" class="tab-section">
+                        <div id="modal-qa-container" class="qa-history-container"></div>
+
+                        <!-- Empty state for Q&A tab -->
+                        <div id="qa-empty-state" class="empty-state">
+                            <i class="fa-solid fa-comments"></i>
+                            <p>No follow-up questions have been asked about this image yet.</p>
+                            <small>Use the analyzer to ask questions about your images.</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,6 +340,7 @@
         </div>
     </div>
 
-     <script src="{{ url_for('static', filename='history.js') }}"></script>
+    <script src="{{ url_for('static', filename='history.js') }}"></script>
 </body>
+
 </html>

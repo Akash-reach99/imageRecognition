@@ -1,29 +1,35 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Color Palette Generator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"> </head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
 <body class="page-palette">
-    
+
     {% include '_nav.html' %}
 
     <main class="container page-wrapper">
         <article>
             <hgroup>
                 <h2>Perceptual Palette Generator</h2>
-                <p>Upload an image to extract its 10 most dominant colors, calculated using the LAB color space for human perception.</p>
+                <p>Upload an image to extract its 10 most dominant colors, calculated using the LAB color space for
+                    human perception.</p>
             </hgroup>
             <form id="palette-form">
                 <label for="file" class="drop-zone">
                     <span class="drop-zone-prompt">Drag & Drop an image or</span>
-                    <input type="button" value="Click to Upload" class="secondary" onclick="document.getElementById('file').click();" />
+                    <input type="button" value="Click to Upload" class="secondary"
+                        onclick="document.getElementById('file').click();" />
                     <span id="file-input-filename" class="file-input-filename">No file selected</span>
                 </label>
-                <input type="file" id="file" name="file" required class="hidden" accept="image/*"> <div class="image-preview-container hidden">
-                    <img id="image-preview" src="#" alt="Image Preview"/>
+                <input type="file" id="file" name="file" required class="hidden" accept="image/*">
+                <div class="image-preview-container hidden">
+                    <img id="image-preview" src="#" alt="Image Preview" />
                 </div>
 
                 <button type="submit" id="palette-submit-btn">Generate Palette</button>
@@ -41,9 +47,32 @@
             <hr>
 
             <article id="auto-palette-article">
-                <h2>Generated Palette</h2>
-                <p class="palette-instructions">Click a color to copy its HEX code.</p>
+                <div class="palette-header">
+                    <h2>Generated Palette</h2>
+                    <div class="palette-actions">
+                        <!-- Format Toggle -->
+                        <div class="format-toggle">
+                            <button class="format-btn active" data-format="hex">HEX</button>
+                            <button class="format-btn" data-format="rgb">RGB</button>
+                            <button class="format-btn" data-format="hsl">HSL</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="palette-instructions">Click a color to copy its code.</p>
                 <div id="palette-container" class="minimal-palette-grid"></div>
+
+                <!-- Export Buttons -->
+                <div class="export-buttons">
+                    <button id="copy-css-btn" class="outline" title="Copy as CSS Variables">
+                        <i class="fa-brands fa-css3-alt"></i> CSS Variables
+                    </button>
+                    <button id="copy-tailwind-btn" class="outline" title="Copy as Tailwind Config">
+                        <i class="fa-solid fa-wind"></i> Tailwind
+                    </button>
+                    <button id="copy-json-btn" class="outline" title="Copy as JSON">
+                        <i class="fa-solid fa-code"></i> JSON
+                    </button>
+                </div>
             </article>
 
             <article id="gemini-color-finder">
@@ -78,4 +107,5 @@
 
     <script src="{{ url_for('static', filename='palette.js') }}"></script>
 </body>
+
 </html>

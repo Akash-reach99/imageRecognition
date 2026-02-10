@@ -1,0 +1,649 @@
+/* ===========================================
+   ANALYTICS.CSS - Data Visualization Styles
+   =========================================== */
+
+/* --- Bar Charts & Stats --- */
+/* --- 16. Imagga Bar Chart --- */
+
+.bar-chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    /* Space between bars */
+    padding-top: 0.5rem;
+    /* A little space from the <p> tag */
+    font-size: 0.95em;
+}
+
+.bar-chart-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 0.5fr;
+    /* Label | Bar | Percent */
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.bar-chart-label {
+    font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--pico-muted-color);
+}
+
+.bar-chart-bar-container {
+    width: 100%;
+    background-color: var(--pico-background-color);
+    border-radius: var(--pico-border-radius);
+    height: 1.5rem;
+    /* Taller, clearer bar */
+    border: 1px solid var(--pico-muted-border-color);
+    overflow: hidden;
+    /* Ensures bar stays inside */
+}
+
+.bar-chart-bar {
+    height: 100%;
+    /* This gold/yellow matches the "tag-imagga" style */
+    background-color: #ffc107;
+    border-radius: var(--pico-border-radius);
+    transition: width 0.5s ease-out;
+    /* Animate the bar */
+    text-indent: -9999px;
+    /* Hides any text */
+}
+
+.bar-chart-percent {
+    font-weight: 600;
+    font-family: var(--font-mono);
+    text-align: left;
+    color: var(--pico-primary);
+}
+
+/* Dark mode bar */
+[data-theme="dark"] .bar-chart-bar {
+    background-color: #ffc107;
+}
+
+[data-theme="dark"] .bar-chart-bar-container {
+    background-color: var(--pico-code-background-color);
+}
+
+/* --- AI Visual Analytics Section --- */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.analytics-card {
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 1rem;
+}
+
+.analytics-section-title {
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--pico-primary);
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+/* Chart canvas container for Chart.js */
+.chart-canvas-container {
+    position: relative;
+    height: 180px;
+    width: 100%;
+}
+
+.chart-canvas-container canvas {
+    max-height: 180px !important;
+}
+
+/* --- Image Statistics Panel --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.stat-card {
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--pico-primary);
+}
+
+.stat-gauge-container {
+    position: relative;
+    height: 1.5rem;
+    background: var(--pico-card-sectionning-background-color);
+    border-radius: var(--pico-border-radius);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.stat-gauge-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+}
+
+.stat-gauge-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--pico-primary);
+    transition: width 0.5s ease-out, background-color 0.3s;
+}
+
+.stat-value {
+    position: relative;
+    z-index: 1;
+    margin-left: auto;
+    margin-right: 0.5rem;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--pico-background-color);
+    mix-blend-mode: difference;
+}
+
+/* Compact bar chart styles */
+.bar-chart-container.compact .bar-chart-row {
+    padding: 0.25rem 0;
+    gap: 0.5rem;
+}
+
+.bar-chart-container.compact .bar-chart-label {
+    font-size: 0.8em;
+    min-width: 70px;
+}
+
+.bar-chart-container.compact .bar-chart-bar-container {
+    height: 14px;
+}
+
+.bar-chart-container.compact .bar-chart-percent {
+    font-size: 0.75em;
+    min-width: 35px;
+}
+
+/* Color-coded analytics bars */
+.bar-chart-bar.bar-tags {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.bar-chart-bar.bar-mood {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.bar-chart-bar.bar-quality {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* Color bars will use actual color via JS */
+.bar-chart-bar.bar-color {
+    background: linear-gradient(90deg, #ec4899, #f472b6);
+}
+
+/* Dark mode colors */
+[data-theme="dark"] .bar-chart-bar.bar-tags {
+    background: linear-gradient(90deg, #60a5fa, #93c5fd);
+}
+
+[data-theme="dark"] .bar-chart-bar.bar-mood {
+    background: linear-gradient(90deg, #fbbf24, #fcd34d);
+}
+
+[data-theme="dark"] .bar-chart-bar.bar-quality {
+    background: linear-gradient(90deg, #34d399, #6ee7b7);
+}
+
+/* --- Professional Analytics (Charts, Gauges) --- */
+/* ================================================== */
+/* === PROFESSIONAL ANALYTICS VISUALIZATION STYLES === */
+/* ================================================== */
+
+/* Analytics Section Container */
+.analytics-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--border-radius-lg);
+}
+
+.analytics-section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--pico-primary);
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.analytics-section-title i {
+    font-size: 1rem;
+}
+
+/* Two Column Layout */
+.analytics-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .analytics-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========== TAG PILLS STYLES ========== */
+.tag-pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: linear-gradient(135deg, var(--pico-primary-focus) 0%, rgba(var(--pico-primary-focus), 0.3) 100%);
+    border: 1px solid var(--pico-primary);
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--pico-color);
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.tag-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--pico-primary), 0.3);
+}
+
+.tag-pill-name {
+    font-weight: 600;
+}
+
+.tag-pill-confidence {
+    background: var(--pico-primary);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+/* Imagga Pills - Yellow/Gold theme */
+.imagga-pills .tag-pill {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0.05) 100%);
+    border-color: #fbbf24;
+}
+
+.imagga-pills .tag-pill-confidence {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #1a1a1a;
+}
+
+/* ========== COLOR SWATCHES STYLES ========== */
+.color-swatches-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.color-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.color-swatch-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid var(--pico-card-background-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.color-swatch-info {
+    text-align: center;
+}
+
+.color-swatch-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--pico-color);
+    text-transform: capitalize;
+}
+
+.color-swatch-percent {
+    font-size: 0.65rem;
+    color: var(--pico-muted-color);
+}
+
+/* ========== RADIAL GAUGES STYLES ========== */
+.radial-gauges-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.radial-gauges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+}
+
+.radial-gauge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 60px;
+}
+
+.radial-gauge-circle {
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+
+.radial-gauge-svg {
+    transform: rotate(-90deg);
+    width: 50px;
+    height: 50px;
+}
+
+.radial-gauge-bg {
+    fill: none;
+    stroke: var(--pico-muted-border-color);
+    stroke-width: 5;
+}
+
+.radial-gauge-fill {
+    fill: none;
+    stroke-width: 5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+.radial-gauge-fill.mood-fill {
+    stroke: url(#moodGradient);
+}
+
+.radial-gauge-fill.quality-fill {
+    stroke: url(#qualityGradient);
+}
+
+/* Fallback solid colors */
+.radial-gauge-fill.mood-positive {
+    stroke: #22c55e;
+}
+
+.radial-gauge-fill.mood-neutral {
+    stroke: #eab308;
+}
+
+.radial-gauge-fill.mood-negative {
+    stroke: #ef4444;
+}
+
+.radial-gauge-fill.quality-high {
+    stroke: #3b82f6;
+}
+
+.radial-gauge-fill.quality-medium {
+    stroke: #8b5cf6;
+}
+
+.radial-gauge-fill.quality-low {
+    stroke: #f97316;
+}
+
+.radial-gauge-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--pico-color);
+}
+
+.radial-gauge-label {
+    font-size: 0.7rem;
+    color: var(--pico-muted-color);
+    text-align: center;
+    max-width: 60px;
+    line-height: 1.2;
+    text-transform: capitalize;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .tag-pill {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.1) 100%);
+}
+
+[data-theme="dark"] .imagga-pills .tag-pill {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0.1) 100%);
+}
+
+[data-theme="dark"] .color-swatch-circle {
+    border-color: var(--pico-card-border-color);
+}
+
+/* --- NEW: Chart.js AI Visual Analytics Styles --- */
+
+/* Key Insights Grid */
+.analytics-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .analytics-insights-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .analytics-insights-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Insight Card */
+.insight-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1rem;
+    background: linear-gradient(135deg,
+            rgba(99, 102, 241, 0.1) 0%,
+            rgba(168, 85, 247, 0.05) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--border-radius-lg);
+    text-align: center;
+    transition: var(--transition-fast);
+    backdrop-filter: blur(10px);
+}
+
+.insight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.insight-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.insight-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pico-primary);
+    line-height: 1.2;
+}
+
+.insight-label {
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Charts Grid */
+.analytics-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 992px) {
+    .analytics-charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chart Card */
+.analytics-chart-card {
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-card-border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+}
+
+.analytics-chart-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--pico-primary-hover);
+}
+
+.analytics-chart-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--pico-primary);
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.analytics-chart-title i {
+    font-size: 1.1rem;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+}
+
+.chart-container canvas {
+    max-height: 220px !important;
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Dark Theme Adjustments for Insight Cards */
+[data-theme="dark"] .insight-card {
+    background: linear-gradient(135deg,
+            rgba(99, 102, 241, 0.15) 0%,
+            rgba(168, 85, 247, 0.08) 100%);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="dark"] .insight-card:hover {
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.5);
+}
+
+[data-theme="dark"] .analytics-chart-card {
+    background: var(--pico-card-background-color);
+    border-color: var(--pico-card-border-color);
+}
+
+/* Chart.js specific overrides for dark mode */
+[data-theme="dark"] .chart-container {
+    color: #e5e7eb;
+}

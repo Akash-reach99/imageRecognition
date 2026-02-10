@@ -1,0 +1,94 @@
+/* ===========================================
+   BASE.CSS - Foundation & Typography
+   =========================================== */
+
+/* --- Import Pico.css --- */
+@import "https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css";
+
+/* --- 3. General Body & Layout --- */
+body {
+    font-family: var(--font-sans);
+    background-color: var(--pico-background-color);
+    color: var(--pico-color);
+    font-size: var(--pico-font-size);
+    line-height: var(--pico-line-height);
+}
+
+.page-wrapper {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Utilities & Animations --- */
+/* --- 10. Utilities --- */
+.hidden {
+    display: none !important;
+}
+
+.error-message-global {
+    color: var(--error-color);
+    text-align: center;
+    font-weight: 500;
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--error-color);
+    padding: 1rem;
+    border-radius: var(--pico-border-radius);
+    margin-top: 1.5rem;
+}
+
+#global-loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.loader {
+    border: 4px solid var(--pico-muted-border-color);
+    border-top: 4px solid var(--accent-color);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+.loader-text {
+    color: white;
+    font-weight: 500;
+    margin-top: 1rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: 1.1em;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

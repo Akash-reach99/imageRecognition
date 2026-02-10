@@ -1,217 +1,8 @@
-/* static/style.css */
+/* ===========================================
+   PAGES.CSS - Page Layouts & Styles
+   =========================================== */
 
-/* --- 1. Import Pico.css --- */
-@import "https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css";
-
-/* --- 2. Root Variables --- */
-:root {
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    --pico-primary: #0d6efd;
-    --pico-primary-hover: #0b5ed7;
-    --pico-primary-focus: rgba(13, 110, 253, 0.25);
-    --pico-primary-inverse: #FFF;
-    --accent-color: #ff7f0e;
-    --accent-hover-color: #cc650b;
-    --pico-font-size: 115%;
-    --pico-line-height: 1.75;
-    --pico-color: #1a1a1a;
-    --pico-background-color: #ffffff;
-    --pico-card-background-color: #ffffff;
-    --pico-card-border-color: #dee2e6;
-    --pico-muted-color: #495057;
-    --pico-muted-border-color: #ced4da;
-    --success-color: #198754;
-    --error-color: #dc3545;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-    --border-radius-lg: 0.5rem;
-    --transition-fast: all 0.2s ease-in-out;
-}
-
-[data-theme="dark"] {
-    --pico-primary: #3b82f6;
-    --pico-primary-hover: #60a5fa;
-    --pico-primary-focus: rgba(59, 130, 246, 0.25);
-    --accent-color: #fb923c;
-    --accent-hover-color: #fdba74;
-    --pico-color: #e5e7eb;
-    --pico-background-color: #111827;
-    --pico-card-background-color: #1f2937;
-    --pico-card-border-color: #4b5563;
-    --pico-muted-color: #9ca3af;
-    --pico-muted-border-color: #6b7280;
-    --success-color: #22c55e;
-    --error-color: #ef4444;
-}
-
-/* --- 3. General Body & Layout --- */
-body {
-    font-family: var(--font-sans);
-    background-color: var(--pico-background-color);
-    color: var(--pico-color);
-    font-size: var(--pico-font-size);
-    line-height: var(--pico-line-height);
-}
-
-.page-wrapper {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-    animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* --- 4. Navigation Bar --- */
-.main-nav {
-    background-color: var(--pico-card-background-color);
-    border-bottom: 1px solid var(--pico-card-border-color);
-    box-shadow: var(--shadow-sm);
-    padding: 0.75rem 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.main-nav ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.nav-title-link {
-    color: inherit;
-    text-decoration: none;
-    border-bottom: none;
-}
-
-.nav-title-link:hover {
-    color: var(--pico-primary-hover);
-    border-bottom: none;
-}
-
-.main-nav ul li a {
-    font-weight: 500;
-    color: var(--pico-muted-color);
-    padding-bottom: 0.25rem;
-    border-bottom: 2px solid transparent;
-    transition: var(--transition-fast);
-}
-
-.main-nav ul li a:hover {
-    color: var(--pico-primary-hover);
-    border-bottom-color: var(--pico-primary-hover);
-}
-
-.main-nav ul li a.active,
-.main-nav ul li a[aria-current="page"] {
-    color: var(--pico-primary);
-    border-bottom-color: var(--pico-primary);
-    font-weight: 600;
-}
-
-.theme-switcher-label {
-    margin-bottom: 0;
-}
-
-/* --- 5. Form Elements --- */
-.drop-zone {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2.5rem;
-    border: 2px dashed var(--pico-muted-border-color);
-    border-radius: var(--border-radius-lg);
-    background-color: var(--pico-background-color);
-    cursor: pointer;
-    transition: var(--transition-fast);
-}
-
-.drop-zone:hover,
-.drop-zone.drag-over {
-    border-color: var(--pico-primary);
-    background-color: var(--pico-card-background-color);
-}
-
-.drop-zone-prompt {
-    font-weight: 500;
-    color: var(--pico-muted-color);
-    margin-bottom: 1rem;
-}
-
-.file-input-filename {
-    margin-top: 1rem;
-    font-style: italic;
-    color: var(--pico-muted-color);
-}
-
-.image-preview-container {
-    text-align: center;
-    margin: 1.5rem 0;
-}
-
-.image-preview-container img {
-    max-width: 100%;
-    max-height: 300px;
-    border-radius: var(--border-radius-lg);
-}
-
-button,
-input[type="submit"],
-input[type="button"],
-a.button,
-a[role="button"] {
-    --pico-background-color: var(--accent-color);
-    --pico-border-color: var(--accent-color);
-    --pico-color: #fff;
-    transition: var(--transition-fast);
-    /* Added transition */
-}
-
-button:hover,
-input[type="submit"]:hover,
-input[type="button"]:hover,
-a.button:hover,
-a[role="button"]:hover {
-    --pico-background-color: var(--accent-hover-color);
-    --pico-border-color: var(--accent-hover-color);
-    transform: translateY(-2px);
-    /* Add subtle lift */
-    box-shadow: var(--shadow-sm);
-}
-
-button.secondary.outline,
-a.secondary.outline[role="button"] {
-    --pico-color: var(--pico-primary);
-    --pico-border-color: var(--pico-primary);
-    --pico-background-color: transparent;
-}
-
-button.secondary.outline:hover,
-a.secondary.outline[role="button"]:hover {
-    --pico-color: var(--pico-primary-inverse);
-    --pico-border-color: var(--pico-primary-hover);
-    --pico-background-color: var(--pico-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
+/* --- Analyzer Page --- */
 /* --- 6. Analyzer Page --- */
 .task-options {
     margin-top: 1.5rem;
@@ -349,23 +140,33 @@ a.secondary.outline[role="button"]:hover {
     padding-right: 2rem;
 }
 
-.copy-btn-small {
+/* COPY BUTTON - Subtle & Unobtrusive */
+.subtle-copy-btn {
     position: absolute;
-    top: 50%;
+    top: 0;
     right: 0;
-    transform: translateY(-50%);
     background: transparent;
     border: none;
     color: var(--pico-muted-color);
     cursor: pointer;
-    padding: 0.25rem;
-    opacity: 0.5;
-    transition: opacity 0.2s;
+    padding: 0.5rem;
+    font-size: 1rem;
+    opacity: 0;
+    /* Hidden by default */
+    transition: all 0.2s ease;
+    z-index: 2;
 }
 
-.copy-btn-small:hover {
-    opacity: 1;
+/* Show on hover of parent container */
+.caption-box:hover .subtle-copy-btn,
+.summary-box:hover .subtle-copy-btn {
+    opacity: 0.6;
+}
+
+.subtle-copy-btn:hover {
+    opacity: 1 !important;
     color: var(--pico-primary);
+    transform: scale(1.1);
 }
 
 /* Sections Grid - 2 column layout */
@@ -710,6 +511,8 @@ details.collapsible-section[open]>.copyable-container {
     color: var(--pico-primary);
 }
 
+
+/* --- History Page --- */
 /* --- 7. History Page --- */
 .search-form-container {
     margin-bottom: 2rem;
@@ -899,6 +702,8 @@ details.collapsible-section[open]>.copyable-container {
     gap: 1rem;
 }
 
+
+/* --- Palette Generator --- */
 /* --- 8. Palette Generator --- */
 .minimal-palette-grid {
     display: grid;
@@ -975,6 +780,8 @@ details.collapsible-section[open]>.copyable-container {
     font-size: 0.9em;
 }
 
+
+/* --- Generate Page --- */
 /* --- 9. Generate Page --- */
 .grid-class-2-col-input-btn {
     display: grid;
@@ -1066,165 +873,8 @@ details.collapsible-section[open]>.copyable-container {
     width: 100%;
 }
 
-/* --- 10. Utilities --- */
-.hidden {
-    display: none !important;
-}
 
-.error-message-global {
-    color: var(--error-color);
-    text-align: center;
-    font-weight: 500;
-    background-color: var(--pico-card-background-color);
-    border: 1px solid var(--error-color);
-    padding: 1rem;
-    border-radius: var(--pico-border-radius);
-    margin-top: 1.5rem;
-}
-
-#global-loader-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 2000;
-    backdrop-filter: blur(5px);
-}
-
-.loader {
-    border: 4px solid var(--pico-muted-border-color);
-    border-top: 4px solid var(--accent-color);
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-}
-
-.loader-text {
-    color: white;
-    font-weight: 500;
-    margin-top: 1rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    font-size: 1.1em;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* vvvv THIS IS THE ZOOM FIX vvvv */
-.zoomable {
-    cursor: zoom-in;
-}
-
-.zoom-modal-backdrop-class {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 3000;
-    cursor: zoom-out;
-    animation: fadeIn 0.3s ease;
-    padding: 1rem;
-}
-
-.zoom-modal-content-class {
-    max-width: 95vw;
-    max-height: 95vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: auto;
-    /* Allows scrolling */
-    cursor: grab;
-}
-
-.zoom-modal-content-class:active {
-    cursor: grabbing;
-}
-
-.zoom-modal-content-class img {
-    max-width: 1200px;
-    /* Allows 100% zoom */
-    max-height: none;
-    /* Allows 100% zoom */
-    object-fit: contain;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
-    animation: zoomIn 0.3s ease;
-}
-
-@keyframes zoomIn {
-    from {
-        transform: scale(0.8);
-    }
-
-    to {
-        transform: scale(1);
-    }
-}
-
-/* ^^^^ END OF ZOOM FIX ^^^^ */
-
-.tag-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.tag,
-a.tag {
-    display: inline-block;
-    padding: 0.3rem 0.8rem;
-    border-radius: 1rem;
-    font-size: 0.9em;
-    font-weight: 500;
-    text-decoration: none;
-    transition: var(--transition-fast);
-    border: 1px solid transparent;
-}
-
-.tag-yolo,
-.tag {
-    background-color: var(--pico-primary);
-    color: white;
-}
-
-.tag-gemini {
-    background-color: var(--accent-color);
-    color: white;
-}
-
-.tag-imagga {
-    background-color: #ffc107;
-    /* A gold/yellow color */
-    color: #1a1a1a;
-    /* Dark text for a light background */
-}
-
-a.tag:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
+/* --- Responsive Adjustments --- */
 /* --- 11. Responsive Adjustments --- */
 /* --- 11. Responsive Adjustments --- */
 @media (max-width: 768px) {
@@ -1273,6 +923,8 @@ a.tag:hover {
     }
 }
 
+
+/* --- Segmentation Toolbox --- */
 /* --- 12. Segmentation Toolbox Styles --- */
 #segmentation-toolbox details[open]>.grid {
     margin-top: 0.75rem;
@@ -1306,6 +958,25 @@ a.tag:hover {
     text-align: center;
 }
 
+.filter-btn {
+    color: var(--pico-color);
+    /* Ensure visibility in light mode */
+}
+
+.filter-btn.active {
+    --pico-background-color: var(--pico-primary);
+    --pico-border-color: var(--pico-primary);
+    --pico-color: var(--pico-primary-inverse);
+    background-color: var(--pico-primary);
+    color: var(--pico-primary-inverse);
+    border-color: var(--pico-primary);
+}
+
+.comparison-slider-wrapper.dragging {
+    cursor: col-resize;
+}
+
+
 /* Style for the Plotted Preview Image */
 .seg-plot-preview-img {
     width: 100%;
@@ -1336,6 +1007,7 @@ a.tag:hover {
         linear-gradient(135deg, transparent 75%, #ccc 75%);
     background-size: 20px 20px;
     background-position: 0 0, 10px 0, 10px -10px, 0px 10px;
+
 }
 
 [data-theme="dark"] .seg-result-image {
@@ -1344,9 +1016,12 @@ a.tag:hover {
         linear-gradient(135deg, #4b5563 25%, transparent 25%),
         linear-gradient(45deg, transparent 75%, #4b5563 75%),
         linear-gradient(135deg, transparent 75%, #4b5563 75%);
+
 }
 
 
+
+/* --- Comparison Slider --- */
 /* --- 13. Comparison Slider Styles --- */
 .comparison-slider-wrapper {
     width: 100%;
@@ -1355,6 +1030,8 @@ a.tag:hover {
     border: 1px solid var(--pico-card-border-color);
     overflow: hidden;
     position: relative;
+    right: -11px;
+    bottom: -1px;
     background-color: var(--pico-background-color);
 }
 
@@ -1451,6 +1128,8 @@ a.tag:hover {
     }
 }
 
+
+/* --- Landing Page --- */
 /* --- 14. Landing Page Styles --- */
 
 .hero-section {
@@ -1565,6 +1244,8 @@ a.feature-card-link:hover .card-footer-link i {
     transform: translateX(3px);
 }
 
+
+/* --- Task Cards --- */
 /* --- 15. Analyzer Task List (Modern) --- */
 /* THIS SECTION IS NOW OBSOLETE AND REPLACED BY SECTION 24 */
 .task-grid-legend {
@@ -1581,233 +1262,8 @@ a.feature-card-link:hover .card-footer-link i {
 /* Hide the old one */
 
 
-/* --- 16. Imagga Bar Chart --- */
 
-.bar-chart-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    /* Space between bars */
-    padding-top: 0.5rem;
-    /* A little space from the <p> tag */
-    font-size: 0.95em;
-}
-
-.bar-chart-row {
-    display: grid;
-    grid-template-columns: 1fr 2fr 0.5fr;
-    /* Label | Bar | Percent */
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.bar-chart-label {
-    font-weight: 500;
-    text-align: right;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--pico-muted-color);
-}
-
-.bar-chart-bar-container {
-    width: 100%;
-    background-color: var(--pico-background-color);
-    border-radius: var(--pico-border-radius);
-    height: 1.5rem;
-    /* Taller, clearer bar */
-    border: 1px solid var(--pico-muted-border-color);
-    overflow: hidden;
-    /* Ensures bar stays inside */
-}
-
-.bar-chart-bar {
-    height: 100%;
-    /* This gold/yellow matches the "tag-imagga" style */
-    background-color: #ffc107;
-    border-radius: var(--pico-border-radius);
-    transition: width 0.5s ease-out;
-    /* Animate the bar */
-    text-indent: -9999px;
-    /* Hides any text */
-}
-
-.bar-chart-percent {
-    font-weight: 600;
-    font-family: var(--font-mono);
-    text-align: left;
-    color: var(--pico-primary);
-}
-
-/* Dark mode bar */
-[data-theme="dark"] .bar-chart-bar {
-    background-color: #ffc107;
-}
-
-[data-theme="dark"] .bar-chart-bar-container {
-    background-color: var(--pico-code-background-color);
-}
-
-/* --- AI Visual Analytics Section --- */
-.analytics-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-}
-
-@media (max-width: 768px) {
-    .analytics-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.analytics-card {
-    background: var(--pico-card-background-color);
-    border: 1px solid var(--pico-muted-border-color);
-    border-radius: var(--pico-border-radius);
-    padding: 1rem;
-}
-
-.analytics-section-title {
-    font-size: 0.95em;
-    font-weight: 600;
-    color: var(--pico-primary);
-    margin-bottom: 0.5rem;
-    margin-top: 0;
-}
-
-/* Chart canvas container for Chart.js */
-.chart-canvas-container {
-    position: relative;
-    height: 180px;
-    width: 100%;
-}
-
-.chart-canvas-container canvas {
-    max-height: 180px !important;
-}
-
-/* --- Image Statistics Panel --- */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-}
-
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.stat-card {
-    background: var(--pico-card-background-color);
-    border: 1px solid var(--pico-muted-border-color);
-    border-radius: var(--pico-border-radius);
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.stat-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: var(--pico-primary);
-}
-
-.stat-gauge-container {
-    position: relative;
-    height: 1.5rem;
-    background: var(--pico-card-sectionning-background-color);
-    border-radius: var(--pico-border-radius);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-}
-
-.stat-gauge-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-}
-
-.stat-gauge-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: var(--pico-primary);
-    transition: width 0.5s ease-out, background-color 0.3s;
-}
-
-.stat-value {
-    position: relative;
-    z-index: 1;
-    margin-left: auto;
-    margin-right: 0.5rem;
-    font-size: 0.85em;
-    font-weight: 700;
-    color: var(--pico-background-color);
-    mix-blend-mode: difference;
-}
-
-/* Compact bar chart styles */
-.bar-chart-container.compact .bar-chart-row {
-    padding: 0.25rem 0;
-    gap: 0.5rem;
-}
-
-.bar-chart-container.compact .bar-chart-label {
-    font-size: 0.8em;
-    min-width: 70px;
-}
-
-.bar-chart-container.compact .bar-chart-bar-container {
-    height: 14px;
-}
-
-.bar-chart-container.compact .bar-chart-percent {
-    font-size: 0.75em;
-    min-width: 35px;
-}
-
-/* Color-coded analytics bars */
-.bar-chart-bar.bar-tags {
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
-}
-
-.bar-chart-bar.bar-mood {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24);
-}
-
-.bar-chart-bar.bar-quality {
-    background: linear-gradient(90deg, #10b981, #34d399);
-}
-
-/* Color bars will use actual color via JS */
-.bar-chart-bar.bar-color {
-    background: linear-gradient(90deg, #ec4899, #f472b6);
-}
-
-/* Dark mode colors */
-[data-theme="dark"] .bar-chart-bar.bar-tags {
-    background: linear-gradient(90deg, #60a5fa, #93c5fd);
-}
-
-[data-theme="dark"] .bar-chart-bar.bar-mood {
-    background: linear-gradient(90deg, #fbbf24, #fcd34d);
-}
-
-[data-theme="dark"] .bar-chart-bar.bar-quality {
-    background: linear-gradient(90deg, #34d399, #6ee7b7);
-}
-
+/* --- Authentication --- */
 /* --- 17. Authentication & Flash Messages --- */
 
 .auth-container {
@@ -1843,36 +1299,533 @@ a.feature-card-link:hover .card-footer-link i {
     font-weight: 500;
 }
 
-/* --- 18. Admin Panel --- */
-.page-admin table {
-    margin-top: 1rem;
+
+/* --- Admin Panel --- */
+/* --- 18. Admin Dashboard (Enhanced Presentation) --- */
+
+.page-admin .admin-header {
+    margin-bottom: 2rem;
 }
 
-/* --- 19. Admin Panel Actions --- */
-.admin-action-form {
-    display: block;
-    /* Stack buttons vertically */
-    margin: 0.25rem 0;
+.page-admin .admin-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
-.admin-action-btn {
-    font-size: 0.8em;
-    padding: 0.25rem 0.5rem;
-    margin-bottom: 0;
-    width: 100%;
-    /* Make buttons full width of the cell */
+.page-admin .admin-header h1 i {
+    color: var(--pico-primary);
 }
 
-.admin-action-btn.delete {
-    --pico-color: var(--error-color);
-    --pico-border-color: var(--error-color);
+/* Stats Cards */
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
 }
 
-.admin-action-btn.delete:hover {
-    --pico-background-color: var(--error-color);
-    --pico-color: var(--pico-primary-inverse);
+.admin-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--border-radius-lg);
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-card-border-color);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
 }
 
+.admin-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.admin-stat-card .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.admin-stat-card.stat-users .stat-icon {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+}
+
+.admin-stat-card.stat-analyses .stat-icon {
+    background: linear-gradient(135deg, #22C55E, #16A34A);
+}
+
+.admin-stat-card.stat-status .stat-icon {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+}
+
+.admin-stat-card .stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-stat-card .stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.admin-stat-card .stat-label {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+}
+
+/* Table Card */
+.admin-table-card {
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-card-border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-table-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-table-header h3 i {
+    color: var(--pico-primary);
+}
+
+.admin-search {
+    max-width: 220px;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    border-radius: var(--pico-border-radius);
+}
+
+.admin-table-card .table-wrapper {
+    overflow-x: auto;
+}
+
+.admin-table-card table {
+    margin: 0;
+}
+
+.admin-table-card table th {
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--pico-muted-color);
+}
+
+.admin-table-card .id-cell {
+    font-family: var(--font-mono);
+    color: var(--pico-muted-color);
+}
+
+.admin-table-card .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.admin-table-card .user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pico-primary), #8B5CF6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.admin-table-card .user-details {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.admin-table-card .user-details small {
+    color: var(--pico-muted-color);
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.role-badge.admin {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8B5CF6;
+}
+
+.role-badge.user {
+    background: var(--pico-background-color);
+    color: var(--pico-muted-color);
+    border: 1px solid var(--pico-muted-border-color);
+}
+
+.date-cell {
+    color: var(--pico-muted-color);
+    font-size: 0.9rem;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--pico-muted-border-color);
+    background: var(--pico-background-color);
+    color: var(--pico-muted-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    padding: 0;
+}
+
+.action-btn:hover {
+    background: var(--pico-primary);
+    color: white;
+    border-color: var(--pico-primary);
+}
+
+.action-btn.delete:hover {
+    background: var(--error-color);
+    border-color: var(--error-color);
+}
+
+.you-badge {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+    font-style: italic;
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .role-badge.admin {
+    background: rgba(139, 92, 246, 0.25);
+    color: #A78BFA;
+}
+
+[data-theme="dark"] .admin-stat-card .stat-number {
+    color: var(--pico-color);
+}
+
+/* Storage Stat */
+.admin-stat-card.stat-storage .stat-icon {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+}
+
+/* Activity Feed */
+.admin-activity-card {
+    padding: 1.25rem;
+    border-radius: var(--border-radius-lg);
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-card-border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.admin-activity-card h4 {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-activity-card h4 i {
+    color: var(--pico-primary);
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: var(--pico-background-color);
+}
+
+.activity-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.activity-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.activity-info small {
+    color: var(--pico-muted-color);
+}
+
+.activity-time {
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+}
+
+/* Bulk Actions */
+.table-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bulk-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.bulk-actions.hidden {
+    display: none;
+}
+
+.btn-bulk {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition-fast);
+}
+
+.btn-bulk.toggle {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8B5CF6;
+}
+
+.btn-bulk.toggle:hover {
+    background: #8B5CF6;
+    color: white;
+}
+
+.btn-bulk.delete {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--error-color);
+}
+
+.btn-bulk.delete:hover {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Checkbox Column */
+.checkbox-col {
+    width: 40px;
+    text-align: center;
+}
+
+.checkbox-col input[type="checkbox"] {
+    margin: 0;
+}
+
+/* Data Cleanup */
+.admin-cleanup-card {
+    padding: 1.25rem;
+    border-radius: var(--border-radius-lg);
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-card-border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.admin-cleanup-card h4 {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-cleanup-card h4 i {
+    color: #F59E0B;
+}
+
+.cleanup-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.cleanup-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.cleanup-row label {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.cleanup-row select {
+    width: auto;
+    margin: 0;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+}
+
+.checkbox-label input {
+    margin: 0;
+}
+
+.btn-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--pico-primary);
+    background: transparent;
+    color: var(--pico-primary);
+    transition: var(--transition-fast);
+}
+
+.btn-preview:hover {
+    background: var(--pico-primary);
+    color: white;
+}
+
+.cleanup-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.cleanup-preview.hidden {
+    display: none;
+}
+
+.preview-info {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.btn-cleanup {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: var(--error-color);
+    color: white;
+    transition: var(--transition-fast);
+}
+
+.btn-cleanup:hover {
+    opacity: 0.9;
+}
+
+/* History Multi-Select */
+.card-select-checkbox {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--pico-primary);
+}
+
+.card-select-checkbox.hidden {
+    display: none;
+}
+
+.history-gallery-card.select-mode {
+    cursor: pointer;
+}
+
+.history-gallery-card.select-mode:hover {
+    outline: 2px solid var(--pico-primary);
+}
+
+.card-image-wrapper {
+    position: relative;
+}
+
+#toggle-select-mode.active {
+    background: var(--pico-primary);
+    color: white;
+    border-color: var(--pico-primary);
+}
+
+
+/* --- Editor --- */
 /* --- 20. Generate Page Editor --- */
 
 .editor-grid-class {
@@ -1934,6 +1887,8 @@ a.feature-card-link:hover .card-footer-link i {
     }
 }
 
+
+/* --- Color Finder --- */
 /* --- 21. AI Color Name Finder --- */
 
 #gemini-color-finder hgroup {
@@ -1991,6 +1946,9 @@ a.feature-card-link:hover .card-footer-link i {
 }
 
 /* --- 22. Generate Page (Image Upload) --- */
+
+/* --- Generate Extras --- */
+/* --- 22. Generate Page (Image Upload) --- */
 #generate-from-image-card .image-preview-container img {
     max-height: 250px;
     /* A smaller preview for this form */
@@ -2002,6 +1960,8 @@ a.feature-card-link:hover .card-footer-link i {
     text-shadow: none;
 }
 
+
+/* --- Analyzer Reorganization --- */
 /* --- 23. Analyzer Page (Re-org) --- */
 .details-content-wrapper {
     margin-top: 0.75rem;
@@ -2085,7 +2045,7 @@ a.feature-card-link:hover .card-footer-link i {
     /* Pushes content down */
 }
 
-
+/* Selected State */
 
 .task-card input[type="checkbox"]:checked+.task-card-icon,
 .task-card input[type="checkbox"]:checked+.task-card-icon+.task-card-title {
@@ -2101,8 +2061,8 @@ a.feature-card-link:hover .card-footer-link i {
 }
 
 
-
 /* Re-selecting the elements to apply styles when checked */
+
 .task-card input[type="checkbox"]:checked+.task-card-icon {
     color: var(--pico-primary);
 }
@@ -2116,6 +2076,8 @@ a.feature-card-link:hover .card-footer-link i {
 }
 
 
+
+/* --- YOLO --- */
 /* --- 25. YOLO Detection Counts --- */
 .yolo-count-list {
     display: flex;
@@ -2145,6 +2107,8 @@ a.feature-card-link:hover .card-footer-link i {
     display: block;
 }
 
+
+/* --- Metadata & OCR --- */
 /* --- 26. Metadata Map & History OCR --- */
 
 #map-container {
@@ -2182,6 +2146,8 @@ a.feature-card-link:hover .card-footer-link i {
 }
 
 
+
+/* --- Login Design --- */
 /* --- 27. New Login Design (OTP) --- */
 
 .auth-card {
@@ -2281,6 +2247,8 @@ a.feature-card-link:hover .card-footer-link i {
     margin-top: 0.2rem;
 }
 
+
+/* --- Admin Dashboard --- */
 /* --- 28. NEW: Admin Dashboard Cards --- */
 .stats-grid {
     display: grid;
@@ -2328,6 +2296,8 @@ a.feature-card-link:hover .card-footer-link i {
     font-weight: 600;
 }
 
+
+/* --- Analyzer Tabs --- */
 /* --- 29. NEW: Analyzer Tabbed Interface --- */
 .analyzer-dashboard {
     display: grid;
@@ -2419,6 +2389,8 @@ a.feature-card-link:hover .card-footer-link i {
     }
 }
 
+
+/* --- OCR Styles --- */
 /* --- OCR Stats Bar --- */
 
 .ocr-stats-bar {
@@ -2562,69 +2534,8 @@ button.copy-btn-mini:hover {
     transform: translateY(-1px);
 }
 
-/* --- 30. Toast Notifications --- */
-#toast-container {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    z-index: 5000;
-    pointer-events: none;
-}
 
-.toast {
-    background-color: var(--pico-card-background-color);
-    color: var(--pico-color);
-    border: 1px solid var(--pico-card-border-color);
-    padding: 0.75rem 1.5rem;
-    border-radius: 50px;
-    box-shadow: var(--shadow-lg);
-    font-weight: 600;
-    font-size: 0.9em;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: toastIn 0.3s forwards;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    pointer-events: auto;
-}
 
-.toast.success {
-    border-color: var(--success-color);
-    color: var(--success-color);
-}
-
-.toast.error {
-    border-color: var(--error-color);
-    color: var(--error-color);
-}
-
-.toast.info {
-    border-color: var(--pico-primary);
-    color: var(--pico-primary);
-}
-
-.toast i {
-    font-size: 1.1em;
-}
-
-@keyframes toastIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes toastOut {
-    to {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-}
 
 /* static/style.css - Add to bottom */
 
@@ -2745,6 +2656,9 @@ button.copy-btn-mini:hover {
     margin-bottom: 0.8rem;
 }
 
+
+/* --- Progress Stepper --- */
+
 /* --- 31. Progress Stepper (Analyzer) --- */
 .progress-stepper {
     display: flex;
@@ -2841,6 +2755,9 @@ button.copy-btn-mini:hover {
 }
 
 /* --- 32. Results Summary Card --- */
+
+/* --- Results Summary --- */
+/* --- 32. Results Summary Card --- */
 .results-summary {
     background: linear-gradient(135deg, var(--pico-card-background-color) 0%, var(--pico-background-color) 100%);
     border: 1px solid var(--pico-card-border-color);
@@ -2920,6 +2837,9 @@ button.copy-btn-mini:hover {
         font-size: 0.8rem;
     }
 }
+
+
+/* --- Palette Export --- */
 
 /* --- 33. Palette Export & Format Toggle --- */
 .palette-header {
@@ -3008,6 +2928,9 @@ button.copy-btn-mini:hover {
         width: 100%;
     }
 }
+
+
+/* --- Generator Tabs --- */
 
 /* --- 34. Generator Tabs Navigation --- */
 .generator-tabs-nav {
@@ -3273,6 +3196,8 @@ button.copy-btn-mini:hover {
     }
 }
 
+
+/* --- History Improvements --- */
 /* --- 36. History Page Improvements --- */
 .history-header {
     display: flex;
@@ -3369,14 +3294,23 @@ button.copy-btn-mini:hover {
 }
 
 .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     padding: 0.5rem 1rem;
     background-color: var(--pico-card-background-color);
     border: 1px solid var(--pico-muted-border-color);
     border-radius: 6px;
-    color: var(--pico-color);
+    color: #1a1a1a;
     font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .filter-btn {
+    color: #e5e7eb;
 }
 
 .filter-btn:hover {
@@ -3588,6 +3522,9 @@ button.copy-btn-mini:hover {
     margin-bottom: 0;
 }
 
+
+/* --- Detection Summary --- */
+
 /* --- 45. Detection Summary (Below Detection Image) --- */
 
 .detection-card {
@@ -3686,6 +3623,9 @@ button.copy-btn-mini:hover {
 [data-theme="dark"] .detection-count {
     background-color: rgba(59, 130, 246, 0.25);
 }
+
+
+/* --- History Modal Redesign --- */
 
 /* --- 46. Redesigned History Modal --- */
 
@@ -4073,6 +4013,9 @@ button.copy-btn-mini:hover {
 }
 
 
+
+/* --- History Detail --- */
+
 /* --- 48. History Detail Page (Full View) --- */
 .history-detail-wrapper {
     display: grid;
@@ -4253,6 +4196,7 @@ button.copy-btn-mini:hover {
     padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
     margin-bottom: 0;
+    width: 168px;
 }
 
 .add-tag-input-group button {
@@ -4333,422 +4277,7 @@ button.copy-btn-mini:hover {
     overflow-y: auto;
 }
 
-/* ================================================== */
-/* === PROFESSIONAL ANALYTICS VISUALIZATION STYLES === */
-/* ================================================== */
 
-/* Analytics Section Container */
-.analytics-section {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--pico-card-background-color);
-    border: 1px solid var(--pico-muted-border-color);
-    border-radius: var(--border-radius-lg);
-}
-
-.analytics-section-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--pico-primary);
-    margin: 0 0 1rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.analytics-section-title i {
-    font-size: 1rem;
-}
-
-/* Two Column Layout */
-.analytics-two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-@media (max-width: 768px) {
-    .analytics-two-col {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ========== TAG PILLS STYLES ========== */
-.tag-pills-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.tag-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.8rem;
-    background: linear-gradient(135deg, var(--pico-primary-focus) 0%, rgba(var(--pico-primary-focus), 0.3) 100%);
-    border: 1px solid var(--pico-primary);
-    border-radius: 2rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--pico-color);
-    transition: all 0.2s ease;
-    cursor: default;
-}
-
-.tag-pill:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(var(--pico-primary), 0.3);
-}
-
-.tag-pill-name {
-    font-weight: 600;
-}
-
-.tag-pill-confidence {
-    background: var(--pico-primary);
-    color: white;
-    padding: 0.15rem 0.5rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    min-width: 2.5rem;
-    text-align: center;
-}
-
-/* Imagga Pills - Yellow/Gold theme */
-.imagga-pills .tag-pill {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0.05) 100%);
-    border-color: #fbbf24;
-}
-
-.imagga-pills .tag-pill-confidence {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    color: #1a1a1a;
-}
-
-/* ========== COLOR SWATCHES STYLES ========== */
-.color-swatches-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.color-swatch {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.color-swatch:hover {
-    transform: scale(1.1);
-}
-
-.color-swatch-circle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 3px solid var(--pico-card-background-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.1);
-}
-
-.color-swatch-info {
-    text-align: center;
-}
-
-.color-swatch-name {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--pico-color);
-    text-transform: capitalize;
-}
-
-.color-swatch-percent {
-    font-size: 0.65rem;
-    color: var(--pico-muted-color);
-}
-
-/* ========== RADIAL GAUGES STYLES ========== */
-.radial-gauges-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.radial-gauges-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: flex-start;
-}
-
-.radial-gauge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-    min-width: 60px;
-}
-
-.radial-gauge-circle {
-    position: relative;
-    width: 50px;
-    height: 50px;
-}
-
-.radial-gauge-svg {
-    transform: rotate(-90deg);
-    width: 50px;
-    height: 50px;
-}
-
-.radial-gauge-bg {
-    fill: none;
-    stroke: var(--pico-muted-border-color);
-    stroke-width: 5;
-}
-
-.radial-gauge-fill {
-    fill: none;
-    stroke-width: 5;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.6s ease;
-}
-
-.radial-gauge-fill.mood-fill {
-    stroke: url(#moodGradient);
-}
-
-.radial-gauge-fill.quality-fill {
-    stroke: url(#qualityGradient);
-}
-
-/* Fallback solid colors */
-.radial-gauge-fill.mood-positive {
-    stroke: #22c55e;
-}
-
-.radial-gauge-fill.mood-neutral {
-    stroke: #eab308;
-}
-
-.radial-gauge-fill.mood-negative {
-    stroke: #ef4444;
-}
-
-.radial-gauge-fill.quality-high {
-    stroke: #3b82f6;
-}
-
-.radial-gauge-fill.quality-medium {
-    stroke: #8b5cf6;
-}
-
-.radial-gauge-fill.quality-low {
-    stroke: #f97316;
-}
-
-.radial-gauge-value {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--pico-color);
-}
-
-.radial-gauge-label {
-    font-size: 0.7rem;
-    color: var(--pico-muted-color);
-    text-align: center;
-    max-width: 60px;
-    line-height: 1.2;
-    text-transform: capitalize;
-}
-
-/* Dark mode adjustments */
-[data-theme="dark"] .tag-pill {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.1) 100%);
-}
-
-[data-theme="dark"] .imagga-pills .tag-pill {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0.1) 100%);
-}
-
-[data-theme="dark"] .color-swatch-circle {
-    border-color: var(--pico-card-border-color);
-}
-
-/* --- NEW: Chart.js AI Visual Analytics Styles --- */
-
-/* Key Insights Grid */
-.analytics-insights-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-@media (max-width: 768px) {
-    .analytics-insights-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 480px) {
-    .analytics-insights-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Insight Card */
-.insight-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1.25rem 1rem;
-    background: linear-gradient(135deg,
-            rgba(99, 102, 241, 0.1) 0%,
-            rgba(168, 85, 247, 0.05) 100%);
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    border-radius: var(--border-radius-lg);
-    text-align: center;
-    transition: var(--transition-fast);
-    backdrop-filter: blur(10px);
-}
-
-.insight-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.4);
-}
-
-.insight-icon {
-    font-size: 1.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.insight-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--pico-primary);
-    line-height: 1.2;
-}
-
-.insight-label {
-    font-size: 0.8rem;
-    color: var(--pico-muted-color);
-    margin-top: 0.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* Charts Grid */
-.analytics-charts-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-}
-
-@media (max-width: 992px) {
-    .analytics-charts-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Chart Card */
-.analytics-chart-card {
-    background: var(--pico-card-background-color);
-    border: 1px solid var(--pico-card-border-color);
-    border-radius: var(--border-radius-lg);
-    padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-fast);
-}
-
-.analytics-chart-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--pico-primary-hover);
-}
-
-.analytics-chart-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--pico-primary);
-    margin: 0 0 1rem 0;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--pico-muted-border-color);
-}
-
-.analytics-chart-title i {
-    font-size: 1.1rem;
-}
-
-/* Chart Container */
-.chart-container {
-    position: relative;
-    width: 100%;
-    height: 220px;
-}
-
-.chart-container canvas {
-    max-height: 220px !important;
-}
-
-/* Animation Keyframes */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes popIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Dark Theme Adjustments for Insight Cards */
-[data-theme="dark"] .insight-card {
-    background: linear-gradient(135deg,
-            rgba(99, 102, 241, 0.15) 0%,
-            rgba(168, 85, 247, 0.08) 100%);
-    border-color: rgba(99, 102, 241, 0.3);
-}
-
-[data-theme="dark"] .insight-card:hover {
-    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);
-    border-color: rgba(99, 102, 241, 0.5);
-}
-
-[data-theme="dark"] .analytics-chart-card {
-    background: var(--pico-card-background-color);
-    border-color: var(--pico-card-border-color);
-}
-
-/* Chart.js specific overrides for dark mode */
-[data-theme="dark"] .chart-container {
-    color: #e5e7eb;
-}
 
 /* --- Task Indicator Icons on History Cards --- */
 .card-task-indicators {
@@ -4870,4 +4399,552 @@ button.copy-btn-mini:hover {
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.85rem;
+}
+
+/* --- 50. History Q&A Styles --- */
+.qa-history-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.qa-history-item {
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-card-border-color);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.qa-question {
+    background: rgba(99, 102, 241, 0.1);
+    /* Light indigo tint */
+    padding: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+[data-theme="dark"] .qa-question {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.qa-question i {
+    color: var(--pico-primary);
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+.qa-question span {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--pico-color);
+}
+
+.qa-answer {
+    padding: 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.qa-answer i {
+    color: var(--accent-color);
+    /* Orange/Accent for AI */
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+.qa-answer-text {
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--pico-color);
+}
+
+/* Markdown formatting inside answers */
+.qa-answer-text p {
+    margin-bottom: 0.75rem;
+}
+
+.qa-answer-text p:last-child {
+    margin-bottom: 0;
+}
+
+.qa-answer-text code {
+    background: var(--pico-background-color);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.qa-answer-text pre {
+    background: var(--pico-background-color);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    border: 1px solid var(--pico-muted-border-color);
+}
+
+[data-theme="dark"] .qa-answer-text pre {
+    background: #0f172a;
+    /* Darker bg for code in dark mode */
+}
+
+/* --- Moved from analyzer.html --- */
+/* Crop Modal Styles */
+.crop-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.crop-modal-content {
+    background: var(--pico-card-background-color);
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    width: 95%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--pico-muted-border-color);
+}
+
+.crop-container {
+    max-height: 65vh;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    background: #1a1a1a;
+    border-radius: var(--pico-border-radius);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.crop-container img {
+    max-width: 100%;
+    max-height: 65vh;
+    display: block;
+}
+
+.crop-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--pico-muted-border-color);
+}
+
+/* NEW CARD-BASED TASK GRID STYLES */
+/* NEW CARD-BASED TASK GRID STYLES */
+.task-grid-fieldset {
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    min-width: 0;
+    background-color: var(--pico-card-background-color);
+    /* SYSTEM DEFAULT for Light Mode */
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+/* Specific Dark Mode Overlay */
+[data-theme="dark"] .task-grid-fieldset {
+    background-color: #161b22;
+    /* SURFACE NAVY */
+    border-color: #30363d;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.task-grid-legend {
+    float: none;
+    width: auto;
+    padding: 0 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--pico-color);
+    /* Adapt to theme */
+    border-bottom: none;
+}
+
+[data-theme="dark"] .task-grid-legend {
+    color: #c9d1d9;
+    /* Fixed light grey for dark mode */
+}
+
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.task-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+    padding: 1rem;
+    min-height: 200px;
+
+    /* LIGHT MODE DEFAULTS */
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 8px;
+
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* DARK MODE OVERRIDES (The "Tech" Look) */
+[data-theme="dark"] .task-card {
+    background-color: #0d1117;
+    /* INSET DARK NAVY */
+    border-color: #30363d;
+}
+
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--pico-card-box-shadow);
+    border-color: var(--pico-primary);
+}
+
+[data-theme="dark"] .task-card:hover {
+    background-color: #0d1117;
+    border-color: #58a6ff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Selected State */
+.task-card:has(input:checked) {
+    border-color: var(--pico-primary);
+    box-shadow: 0 0 0 1px var(--pico-primary);
+    background-color: var(--pico-card-sectionning-background-color);
+}
+
+[data-theme="dark"] .task-card:has(input:checked) {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 1px #58a6ff;
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Hide default checkbox */
+.task-card input[type='checkbox'] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.task-card-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.task-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.task-card-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--pico-primary);
+    /* Standard primary for light mode */
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+[data-theme="dark"] .task-card-title {
+    color: #58a6ff;
+    /* Cyan-blue for dark mode */
+}
+
+.task-card:has(input:checked) .task-card-title {
+    color: var(--pico-primary);
+}
+
+[data-theme="dark"] .task-card:has(input:checked) .task-card-title {
+    color: #58a6ff;
+}
+
+.task-card-desc {
+    display: block;
+    font-size: 0.85em;
+    color: var(--pico-muted-color);
+    line-height: 1.4;
+}
+
+[data-theme="dark"] .task-card-desc {
+    color: #8b949e;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .task-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .task-card {
+        min-height: auto;
+        flex-direction: row;
+        align-items: center;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .task-card-icon {
+        margin-bottom: 0;
+        font-size: 1.5rem;
+    }
+
+    .task-card-desc {
+        display: none;
+    }
+}
+
+/* ===========================================
+   UI ENHANCEMENTS (Added by Agent)
+   =========================================== */
+
+/* --- 1. Enhanced Drop Zone for Analyzer --- */
+.drop-zone {
+    border: 2px dashed var(--pico-muted-border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: var(--pico-card-background-color);
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+    border-color: var(--pico-primary);
+    transform: scale(1.01);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.drop-zone.drag-over::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--pico-primary);
+    opacity: 0.05;
+    animation: pulse-bg 1.5s infinite;
+}
+
+@keyframes pulse-bg {
+    0% {
+        opacity: 0.05;
+    }
+
+    50% {
+        opacity: 0.15;
+    }
+
+    100% {
+        opacity: 0.05;
+    }
+}
+
+/* --- 2. Smooth Transitions --- */
+/* Simple fade in animation class */
+.fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- 3. Glassmorphism & Card Lift --- */
+.analysis-card,
+.result-card-original,
+.task-card,
+.results-summary {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.analysis-card:hover,
+.result-card-original:hover,
+.task-card:hover:not(:has(input:disabled)),
+.results-summary:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* --- 4. Button Micro-interactions --- */
+button:active,
+.button:active {
+    transform: scale(0.97);
+}
+
+/* --- Magic Toolbox Refactor --- */
+.magic-toolbox-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    /* Compact gap */
+    margin-top: 1rem;
+    align-items: stretch;
+    /* Ensure all cards have equal height */
+}
+
+@media (max-width: 900px) {
+    .magic-toolbox-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.premium-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    /* Compact padding */
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--pico-card-background-color);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin: 0;
+    /* Override default fieldset margin */
+    min-width: 0;
+    /* Allow flex/grid shrinking */
+    box-sizing: border-box;
+}
+
+.premium-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--pico-primary);
+}
+
+.premium-legend {
+    width: auto;
+    padding: 0 0.5rem;
+    font-weight: 700;
+    color: var(--pico-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.85em;
+    margin-bottom: 0.5rem;
+    /* Ensure spacing from content */
+}
+
+/* ... Preview Area ... */
+.preview-area-wrapper {
+    background: var(--pico-card-sectionning-background-color);
+    /* Adaptive background */
+    padding: 1rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--pico-muted-border-color);
+    /* Adaptive border */
+    /* box-shadow: inset 0 0 20px rgba(0,0,0,0.05); Less aggressive shadow */
+    text-align: center;
+    position: relative;
+    /* Context for absolute positioning if needed */
+    display: flex;
+    flex-direction: column;
+    /* Stack image and button vertically */
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    /* Reduced min-height */
+    margin-bottom: 0;
+}
+
+/* Optional: Keep "Premium Dark" canvas ONLY in Dark Mode */
+[data-theme="dark"] .preview-area-wrapper {
+    background: #111;
+    border-color: #333;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.key-image {
+    max-height: 500px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: var(--border-radius-lg);
+}
+
+/* Ensure buttons inside grid fill space nicely */
+.seg-button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* 2 columns */
+    gap: 0.75rem;
+    align-content: start;
+    /* Pack items to start (don't stretch rows unnecessarily) */
+}
+
+.seg-button-grid .seg-tool-btn {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.85em;
+    /* Slightly smaller text */
+    padding: 0.6rem 0.4rem;
+    /* Compact padding */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    height: auto;
+    min-height: 70px;
+    /* Reduced min-height */
+    background: linear-gradient(145deg, var(--pico-background-color), var(--pico-card-sectionning-background-color));
+    /* Subtle gradient */
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    text-align: center;
+    transition: all 0.2s ease;
+    color: var(--pico-color);
+    /* Explicitly set text color to adapt to theme */
+}
+
+.seg-button-grid .seg-tool-btn:hover {
+    border-color: var(--pico-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.seg-button-grid .seg-tool-btn i {
+    font-size: 1.3em;
+    /* Larger icons */
+    margin-bottom: 2px;
+}
+
+/* Force Active State to override gradient background */
+.seg-button-grid .seg-tool-btn.active,
+.seg-button-grid .seg-tool-btn:active,
+.filter-btn.active {
+    background: var(--pico-primary) !important;
+    border-color: var(--pico-primary) !important;
+    color: var(--pico-primary-inverse) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
